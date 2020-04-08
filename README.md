@@ -9,7 +9,7 @@
 3. Once your repository is created you will have a copy of the assignment template in your github repository. Now you can clone the repository onto your local computer using the following command. Be sure do execute this command from the directory you wish to locate your work.
 
   ```
-  $ git clone git@github.com:intro-graphics/A2-accole.git
+  $ git clone git@github.com:intro-graphics/A2-username.git
   ```
   
 4. You can now follow the remaining steps of the assignment.
