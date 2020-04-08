@@ -78,7 +78,7 @@ NOTE: Please use the default camera definition defined in the `Assignment_Two_Sc
 
 2. Display a stack of 6 unit cubes starting from the origin and extending upward – **10 points.**
 
-    Instance each of the eight cubes from the same geometry data (we defined this as "box" in your scene's constructor function). Due to our other provided code in the constructor, the boxes will appear with a symmetric perspective projection, with square aspect ratio (not stretched or squeezed). The initial camera position at the given position (-5, 10, 30) is far back enough to view the scene. Note that to place a camera there is the opposite transform action that would be used to place a regular shape.
+    Instance each of the six cubes from the same geometry data (we defined this as "box" in your scene's constructor function). Due to our other provided code in the constructor, the boxes will appear with a symmetric perspective projection, with square aspect ratio (not stretched or squeezed). The initial camera position at the given position (-5, 10, 30) is far back enough to view the scene. Note that to place a camera there is the opposite transform action that would be used to place a regular shape.
 
 3.  Make the stack of boxes sway like a blade of grass in the wind. It should sway back and forth three times per second. Be exact if you can. Here is a GIF, slowed down. It shows other parts of the assignment completed as well.
 
