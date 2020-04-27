@@ -78,6 +78,16 @@ window.Cube_Outline = window.classes.Cube_Outline =
             //  TODO (Requirement 5).
             // When a set of lines is used in graphics, you should think of the list entries as
             // broken down into pairs; each pair of vertices will be drawn as a line segment.
+            this.positions.push(...Vec.cast(
+                [-1, -1, -1], [1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, -1], [-1, 1, -1], [1, 1, 1], [-1, 1, 1],
+                [-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [-1, 1, 1], [1, -1, 1], [1, -1, -1], [1, 1, 1], [1, 1, -1],
+                [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, -1], [-1, -1, -1], [1, 1, -1], [-1, 1, -1],
+                [-1, -1, -1,], [-1, 1, -1], [-1, -1, 1], [-1, 1, 1], [1, -1,-1], [1, 1, -1], [1,1,1], [1,-1,1]));
+            const white = Color.of(1,1,1,1);
+            this.colors.push(white, white, white, white, white, white, white, white,
+                            white, white, white, white, white, white, white, white,
+                            white, white, white, white, white, white, white, white,
+                            white, white, white, white, white, white, white, white);
 
             this.indexed = false;
             // Do this so we won't need to define "this.indices".
@@ -130,22 +140,26 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
             this.lights = [new Light(Vec.of(0, 5, 5, 1), Color.of(1, .4, 1, 1), 100000)];
 
             this.set_colors();
+
+            this.paused = false;
+            this.show_outline = false;
+
         }
 
         set_colors() {
-            // TODO:  Create a class member variable to store your cube's colors.
+            this.cur_colors = this.generateColors() //Create a class member variable to store your cube's colors.
         }
 
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
             this.key_triggered_button("Change Colors", ["c"], this.set_colors);
-            // Add a button for controlling the scene.
+                // Add a button for controlling the scene.
             this.key_triggered_button("Outline", ["o"], () => {
-                // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
+                this.show_outline = !this.show_outline;
             });
             this.key_triggered_button("Sit still", ["m"], () => {
-                // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
+                this.paused = !this.paused;
             });
         }
 
@@ -158,9 +172,50 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
 
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
+            if (!this.paused) {
+                this.t = graphics_state.animation_time / 1000;
+            }
+            else{
+                this.t = 0;
+            }
+            let cur_angle = .02*Math.PI + .02*Math.PI * Math.cos(2*Math.PI/3*this.t);
 
+
+            this.generateBoxes(graphics_state, cur_angle);
+        }
+
+        generateBoxes(graphics_state, cur_angle) {
             let model_transform = Mat4.identity();
 
-            // TODO:  Draw your entire scene here.  Use this.draw_box( graphics_state, model_transform ) to call your helper.
+            if (!this.show_outline){
+                this.shapes.box.draw(graphics_state, model_transform, this.plastic.override({color: this.cur_colors[0]}));   // Draw the bottom box.
+            }
+            else {
+                this.shapes.outline.draw(graphics_state, model_transform, this.white, "LINES");
+            }
+
+            for (var i = 1; i < 6; i++){
+                model_transform = model_transform.times(Mat4.translation([-1, 1, 0]));
+                //translate axis to corner
+                model_transform = model_transform.times(Mat4.rotation(cur_angle, Vec.of(0,0,1)));
+                //rotate about corner
+                model_transform = model_transform.times(Mat4.translation([1, 1, 0]))
+                //go to box-draw origin
+                if (!this.show_outline) {
+                    this.shapes.box.draw(graphics_state, model_transform, this.plastic.override({color: this.cur_colors[i]}));   // Draw the current box.
+                }
+                else {
+                    this.shapes.outline.draw(graphics_state, model_transform, this.white, "LINES");
+                }
+            }
+        }
+
+        generateColors(){
+            return [Color.of(Math.random(), Math.random(), Math.random(), 1),
+                    Color.of(Math.random(), Math.random(), Math.random(), 1),
+                    Color.of(Math.random(), Math.random(), Math.random(), 1),
+                    Color.of(Math.random(), Math.random(), Math.random(), 1),
+                    Color.of(Math.random(), Math.random(), Math.random(), 1),
+                    Color.of(Math.random(), Math.random(), Math.random(), 1)]
         }
     };
