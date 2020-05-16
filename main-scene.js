@@ -25,51 +25,6 @@ window.Cube = window.classes.Cube =
         }
     };
 
-window.Transforms_Sandbox = window.classes.Transforms_Sandbox =
-    class Transforms_Sandbox extends Tutorial_Animation {
-        display(graphics_state)
-        // This subclass of some other Scene overrides the display() function.  By only
-        // exposing that one function, which draws everything, this creates a very small code
-        // sandbox for editing a simple scene, and for experimenting with matrix transforms.
-        {
-            let model_transform = Mat4.identity();
-            // Variable model_transform will be a temporary matrix that helps us draw most shapes.
-            // It starts over as the identity every single frame - coordinate axes at the origin.
-            graphics_state.lights = this.lights;
-            // Use the lights stored in this.lights.
-
-            /**********************************
-             Start coding down here!!!!
-             // From here on down it's just some example shapes drawn for you -- freely replace them
-             // with your own!  Notice the usage of the functions translation(), scale(), and rotation()
-             // to generate matrices, and the functions times(), which generates products of matrices.
-             **********************************/
-
-            const blue = Color.of(0, 0, 1, 1), yellow = Color.of(1, 1, 0, 1);
-            model_transform = model_transform.times(Mat4.translation([0, 3, 20]));
-            this.shapes.box.draw(graphics_state, model_transform, this.plastic.override({color: yellow}));
-            // Draw the top box.
-
-            const t = this.t = graphics_state.animation_time / 1000;
-            // Find how much time has passed in seconds, and use that to place shapes.
-
-            model_transform = model_transform.times(Mat4.translation([0, -2, 0]));
-            // Tweak our coordinate system downward for the next shape.
-
-            this.shapes.ball.draw(graphics_state, model_transform, this.plastic.override({color: blue}));
-            // Draw the ball.
-
-            if (!this.hover)    //  The first line below won't execute if the button on the page has been toggled:
-                model_transform = model_transform.times(Mat4.rotation(t, Vec.of(0, 1, 0)));
-            // Spin our coordinate frame as a function of time.
-
-            model_transform = model_transform.times(Mat4.rotation(1, Vec.of(0, 0, 1)))  // Rotate another axis by a constant value.
-                .times(Mat4.scale([1, 2, 1]))      // Stretch the coordinate frame.
-                .times(Mat4.translation([0, -1.5, 0]));     // Translate down enough for the two volumes to miss.
-            this.shapes.box.draw(graphics_state, model_transform, this.plastic.override({color: yellow}));   // Draw the bottom box.
-        }
-    };
-
 window.Cube_Outline = window.classes.Cube_Outline =
     class Cube_Outline extends Shape {
         constructor() {
@@ -94,16 +49,9 @@ window.Cube_Outline = window.classes.Cube_Outline =
         }
     };
 
-window.Cube_Single_Strip = window.classes.Cube_Single_Strip =
-    class Cube_Single_Strip extends Shape {
-        constructor() {
-            super("positions", "normals");
-            // TODO (Extra credit part I)
-        }
-    };
 
-window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
-    class Assignment_Two_Scene extends Scene_Component {
+window.Xplore = window.classes.Xplore =
+    class Xplore extends Scene_Component {
         constructor(context, control_box) {
             // The scene begins by requesting the camera, shapes, and materials it will need.
             super(context, control_box);
@@ -117,10 +65,8 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
 
             const shapes = {
                 'box': new Cube(),
-                'strip': new Cube_Single_Strip(),
-                'outline': new Cube_Outline(),
                 'ground': new Ground(),
-                'triangle': new Triangle()
+                'triangle': new Triangle(),
             };
 
             this.materials = {
@@ -165,10 +111,7 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
             let model_transform = Mat4.identity()
-            //this.shapes.box.draw(graphics_state, model_transform, this.plastic)
-            //model_transform = model_transform.times(Mat4.translation([0, 5, 0]))
-            this.shapes.ground.draw(graphics_state, Mat4.identity(), this.materials.grass)
-            //this.shapes.triangle.draw(graphics_state, model_transform, this.plastic)
+            this.shapes.ground.draw(graphics_state, model_transform, this.materials.grass)
         }
 
 
