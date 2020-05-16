@@ -112,13 +112,23 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
-            context.globals.graphics_state.camera_transform = Mat4.translation([5, -10, -30]);  // Locate the camera here (inverted matrix).
+            context.globals.graphics_state.camera_transform = Mat4.translation([0, -3, 0]);  // Locate the camera here (inverted matrix).
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             const shapes = {
                 'box': new Cube(),
                 'strip': new Cube_Single_Strip(),
-                'outline': new Cube_Outline()
+                'outline': new Cube_Outline(),
+                'ground': new Ground(),
+                'triangle': new Triangle()
+            };
+
+            this.materials = {
+                grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
+                    ambient: .4,
+                    diffusivity: .4
+                })
+
             };
             // At the beginning of our program, load one of each of these shape
             // definitions onto the GPU.  NOTE:  Only do this ONCE per shape
@@ -141,9 +151,6 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
 
 
 
-            this.paused = false;
-            this.show_outline = false;
-
         }
 
 
@@ -157,7 +164,11 @@ window.Assignment_Two_Scene = window.classes.Assignment_Two_Scene =
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
-            this.shapes.box.draw(graphics_state, Mat4.identity(), this.plastic)
+            let model_transform = Mat4.identity()
+            //this.shapes.box.draw(graphics_state, model_transform, this.plastic)
+            //model_transform = model_transform.times(Mat4.translation([0, 5, 0]))
+            this.shapes.ground.draw(graphics_state, Mat4.identity(), this.materials.grass)
+            //this.shapes.triangle.draw(graphics_state, model_transform, this.plastic)
         }
 
 

@@ -33,6 +33,19 @@ window.Square = window.classes.Square =
         }
     };
 
+window.Ground = window.classes.Ground =
+        class Ground extends Shape
+        {
+            constructor()
+            {
+                super("positions", "normals");
+                this.positions.push(...Vec.cast([-100, 0, -100], [100, 0, -100], [-100, 0, 100], [100, 0, 100]));
+                this.normals.push(...Vec.cast([0,1,0], [0,1,0], [0,1,0], [0,1,0]));
+
+                this.indices.push(0,1,2,1,3,2);
+
+            }
+        };
 
 window.Tetrahedron = window.classes.Tetrahedron =
     class Tetrahedron extends Shape                       // The Tetrahedron shape demonstrates flat vs smooth shading (a boolean argument
