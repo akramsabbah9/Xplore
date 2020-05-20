@@ -4,8 +4,8 @@ window.My_Scene = window.classes.My_Scene =
             // The scene begins by requesting the camera, shapes, and materials it will need.
             super(context, control_box);
             // First, include a secondary Scene that provides movement controls:
-            //if (!context.globals.has_controls)
-            //    context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
+            if (!context.globals.has_controls)
+                context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
             context.globals.graphics_state.camera_transform = Mat4.translation([5, -10, -30]);  // Locate the camera here (inverted matrix).
@@ -28,21 +28,36 @@ window.My_Scene = window.classes.My_Scene =
 
             this.lights = [new Light(Vec.of(0, 5, 5, 1), Color.of(1, .4, 1, 1), 100000)];
 
-            this.velocity = 0; // player velocity. Will be used to move the player, and consequently the camera.
-            this.rotation = 0; // rotates the camera left (negative) or right (positive)
+            /* CAMERA CONTROLS */
+            this.mouse = Vec.of(0, 0); // current mouse position
+            this.rot_vec = Vec.of(0, 0, 0); // vector used to form rotation matrix
+            this.frozen = true;
 
+            context.canvas.addEventListener("mousemove", event => {
+                event.preventDefault();
+                this.update_mouse(event, context.canvas);
+            });
+        }
+
+        update_mouse(event, canvas) {
+            // when mouse is moved, update current rotational position and set new mouse position
+            const rect = canvas.getBoundingClientRect();
+            const newpos = Vec.of(event.clientX - (rect.left + rect.right) / 2,
+                                  event.clientY - (rect.bottom + rect.top) / 2,
+                                  0);
+            this.rot_vec = (!this.frozen) ? newpos.minus(this.mouse) : Vec.of(0, 0, 0);
+            this.mouse = newpos;
         }
 
 
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
-            this.key_triggered_button( "Move Forward",  [ "w" ], () => this.moving = () => 1, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Move Backward",  [ "s" ], () => this.moving = () => 2, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Rotate Left",  [ "a" ], () => this.moving = () => 3, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Rotate Right",  [ "d" ], () => this.moving = () => 4, () => undefined, () => this.moving = () => 0 );
-
-            //this.key_triggered_button( "Move Forward",  [ "i" ], () => this.velocity += 0.5 );
+            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.moving = () => 1, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.moving = () => 2, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Rotate Left",  [ "ArrowLeft" ], () => this.moving = () => 3, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Rotate Right",  [ "ArrowRight" ], () => this.moving = () => 4, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Toggle mouse rotation",  [ "k" ], () => this.frozen = !this.frozen);
         }
 
 
@@ -51,38 +66,38 @@ window.My_Scene = window.classes.My_Scene =
 
             this.shapes.box.draw(graphics_state, Mat4.identity(), this.plastic)
 
-            //this.move_player(graphics_state.camera_transform, this.velocity, this.rotation);
-            //console.log(this.velocity);
+            graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
 
+        }
+
+        move_player(camera) {
+            // rotate camera by rot_vec. Then move in the desired direction.
+            if (!this.frozen && !this.rot_vec.equals(Vec.of(0, 0, 0)))
+            {
+                console.log(this.rot_vec);
+                camera = camera.times(Mat4.rotation(0.005, this.rot_vec));
+            }
+            
             if (this.moving)
                 switch(this.moving()) {
                     case 1:
-                        graphics_state.camera_transform = graphics_state.camera_transform.times(Mat4.translation([0, 0, 0.5]));
-                        //this.moving = () => 0;
+                        camera = camera.times(Mat4.translation([0, 0, 0.5]));
                         break;
                     case 2:
-                        graphics_state.camera_transform = graphics_state.camera_transform.times(Mat4.translation([0, 0, -0.5]));
-                        //this.moving = () => 0;
+                        camera = camera.times(Mat4.translation([0, 0, -0.5]));
                         break;
                     case 3:
-                        graphics_state.camera_transform = graphics_state.camera_transform.times(Mat4.rotation(0.05, Vec.of(0, 1, 0)));
-                        //this.moving = () => 0;
+                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, 1, 0)));
                         break;
                     case 4:
-                        graphics_state.camera_transform = graphics_state.camera_transform.times(Mat4.rotation(0.05, Vec.of(0, -1, 0)));
-                        //this.moving = () => 0;
+                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, -1, 0)));
                         break;
                     default:
-                        //console.log(graphics_state.camera_transform);
+                        //console.log(camera);
                         break;
                 }
-        }
 
-        // moves the player forward,  backward,
-        move_player(camera_transform, velocity, rotation) {
-
-            camera_transform = (velocity > 0) ? 1 : 0;
-            return camera_transform;
+            return camera;
         }
 
     };
