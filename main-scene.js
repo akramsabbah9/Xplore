@@ -4,8 +4,8 @@ window.Xplore = window.classes.Xplore =
             // The scene begins by requesting the camera, shapes, and materials it will need.
             super(context, control_box);
             // First, include a secondary Scene that provides movement controls:
-            if (!context.globals.has_controls)
-                context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
+            //if (!context.globals.has_controls)
+                //context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
             //context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,3,15 ), Vec.of( 0,0,0 ), Vec.of(0,1,0) );
@@ -58,10 +58,25 @@ window.Xplore = window.classes.Xplore =
             // 100 random tree sizes
             this.randomSize = [...Array(100)].map(() => Math.floor(10*Math.random() + 5));
 
-            // initialize movement vars
+            // initialize movement vars & listeners
             this.movx = this.movz = 0;
             this.rotv = this.roth = 0;
+            this.m_rv = this.m_rh = 0; // mouse rotation variables
             this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
+
+            // listeners use 2 vars to avoid race conditions
+            context.canvas.addEventListener("mousedown", e => {
+                e.preventDefault();
+                this.mouse_pos = this.mouse_position(e, context.canvas);
+                this.mouse_down = true;
+            });
+            document.addEventListener("mouseup", e => {
+                this.mouse_down = false;
+            });
+            context.canvas.addEventListener("mousemove", e => {
+                e.preventDefault();
+                if (this.mouse_down) this.update_mouse(e, context.canvas);
+            });
         }
 
 
@@ -137,131 +152,37 @@ window.Xplore = window.classes.Xplore =
             
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
-            //graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
         }
 
-        move() {
-            //console.log(this.rd);
-            /*const a = this.ctrans.times(Mat4.rotation(0.01*this.rotv, Vec.of(1, 0, 0)))
-                              .times(this.rd)
-                              .times(Mat4.rotation(0.01*this.roth, Vec.of(0, 1, 0)))
-                              .times(Mat4.translation([this.movx, 0, this.movz]))
-                              .times(this.ud);*/
-                              
-            const a = this.ctrans.times(this.ud)
-                                 .times(Mat4.translation([this.movx, 0, this.movz]))
-                                 .times(Mat4.rotation(0.01*this.roth, Vec.of(0, 1, 0)))
-                                 .times(this.rd)
-                                 .times(Mat4.rotation(0.01*this.rotv, Vec.of(1, 0, 0)));
-                              
-
-            this.ud = this.ud.times(Mat4.rotation(-0.01*this.rotv, Vec.of(1, 0, 0)));
-            this.rd = this.rd.times(Mat4.rotation(0.01*this.rotv, Vec.of(1, 0, 0)));
-            return a;
-        }
-    };
-
-
-/*window.My_Scene = window.classes.My_Scene =
-    class My_Scene extends Scene_Component {
-        constructor(context, control_box) {
-            // The scene begins by requesting the camera, shapes, and materials it will need.
-            super(context, control_box);
-            // First, include a secondary Scene that provides movement controls:
-            if (!context.globals.has_controls)
-                context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
-
-            const r = context.width / context.height;
-            context.globals.graphics_state.camera_transform = Mat4.translation([5, -10, -30]);  // Locate the camera here (inverted matrix).
-            context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
-
-            const shapes = {
-                'box': new Cube(),
-                'outline': new Cube_Outline()
-            };
-
-            this.submit_shapes(context, shapes);
-
-            // Make some Material objects available to you:
-            this.clay = context.get_instance(Phong_Shader).material(Color.of(.9, .5, .9, 1), {
-                ambient: .4,
-                diffusivity: .4
-            });
-            this.white = context.get_instance(Basic_Shader).material();
-            this.plastic = this.clay.override({specularity: .6});
-
-            this.lights = [new Light(Vec.of(0, 5, 5, 1), Color.of(1, .4, 1, 1), 100000)];
-
-            // CAMERA CONTROLS
-            this.mouse = Vec.of(0, 0); // current mouse position
-            this.rot_vec = Vec.of(0, 0, 0); // vector used to form rotation matrix
-            this.frozen = true;
-
-            context.canvas.addEventListener("mousemove", event => {
-                event.preventDefault();
-                this.update_mouse(event, context.canvas);
-            });
+        mouse_position(event, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            return Vec.of(event.clientX - (rect.left + rect.right) / 2,
+                          event.clientY - (rect.bottom + rect.top) / 2,
+                          0);
         }
 
         update_mouse(event, canvas) {
             // when mouse is moved, update current rotational position and set new mouse position
-            const rect = canvas.getBoundingClientRect();
-            const newpos = Vec.of(event.clientX - (rect.left + rect.right) / 2,
-                                  event.clientY - (rect.bottom + rect.top) / 2,
-                                  0);
-            this.rot_vec = (!this.frozen) ? newpos.minus(this.mouse) : Vec.of(0, 0, 0);
-            this.mouse = newpos;
+            const newpos = this.mouse_position(event, canvas);
+            const rot_vec = newpos.minus(this.mouse_pos);
+            this.m_rh = rot_vec[0];
+            this.m_rv = rot_vec[1];
+            this.mouse_pos = newpos;
         }
 
+        move() { // move camera, then update the undo/redo matrices
+            const h_trans = (this.mouse_down) ? 0.01*this.m_rh : 0.01*this.roth;
+            const v_trans = (this.mouse_down) ? 0.01*this.m_rv : 0.01*this.rotv;
 
-        make_control_panel()
-        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        {
-            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.moving = () => 1, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.moving = () => 2, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Rotate Left",  [ "ArrowLeft" ], () => this.moving = () => 3, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Rotate Right",  [ "ArrowRight" ], () => this.moving = () => 4, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Toggle mouse rotation",  [ "k" ], () => this.frozen = !this.frozen);
+            const a = this.ctrans.times(this.ud)
+                                 .times(Mat4.translation([this.movx, 0, this.movz]))
+                                 .times(Mat4.rotation(h_trans, Vec.of(0, 1, 0)))
+                                 .times(this.rd)
+                                 .times(Mat4.rotation(v_trans, Vec.of(1, 0, 0)));
+
+            this.ud = this.ud.times(Mat4.rotation(-v_trans, Vec.of(1, 0, 0)));
+            this.rd = this.rd.times(Mat4.rotation(v_trans, Vec.of(1, 0, 0)));
+            this.m_rv = this.m_rh = 0;
+            return a;
         }
-
-
-        display(graphics_state) {
-            graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
-
-            this.shapes.box.draw(graphics_state, Mat4.identity(), this.plastic)
-
-            graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
-
-        }
-
-        move_player(camera) {
-            // rotate camera by rot_vec. Then move in the desired direction.
-            if (!this.frozen && !this.rot_vec.equals(Vec.of(0, 0, 0)))
-            {
-                camera = camera.times(Mat4.rotation(1, this.rot_vec));
-                this.rot_vec = Vec.of(0, 0, 0);
-            }
-
-            if (this.moving)
-                switch(this.moving()) {
-                    case 1:
-                        camera = camera.times(Mat4.translation([0, 0, 0.5]));
-                        break;
-                    case 2:
-                        camera = camera.times(Mat4.translation([0, 0, -0.5]));
-                        break;
-                    case 3:
-                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, 1, 0)));
-                        break;
-                    case 4:
-                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, -1, 0)));
-                        break;
-                    default:
-                        //console.log(camera);
-                        break;
-                }
-
-            return camera;
-        }
-
-    };*/
+    };
