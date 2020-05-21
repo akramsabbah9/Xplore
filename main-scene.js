@@ -74,10 +74,10 @@ window.My_Scene = window.classes.My_Scene =
             // rotate camera by rot_vec. Then move in the desired direction.
             if (!this.frozen && !this.rot_vec.equals(Vec.of(0, 0, 0)))
             {
-                console.log(this.rot_vec);
-                camera = camera.times(Mat4.rotation(0.005, this.rot_vec));
+                camera = camera.times(Mat4.rotation(1, this.rot_vec));
+                this.rot_vec = Vec.of(0, 0, 0);
             }
-            
+
             if (this.moving)
                 switch(this.moving()) {
                     case 1:
