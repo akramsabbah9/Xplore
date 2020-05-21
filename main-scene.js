@@ -29,6 +29,9 @@ window.Xplore = window.classes.Xplore =
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
                 green3:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.6,0.2,1 ), {ambient: 0.6}),
+                fire1:    context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), {ambient: 1, specularity:0}),
+                fire2:    context.get_instance( Phong_Shader ).material( Color.of( 1,0.5,0,1 ), {ambient: 1, specularity:0, diffusivity:0}),
+                fire3:    context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), {ambient: 1, specularity:0}),
             };
 
 
@@ -103,7 +106,8 @@ window.Xplore = window.classes.Xplore =
 
         drawGround() {
             let model_transform = Mat4.identity();
-            model_transform = model_transform.times(Mat4.scale([300, 1, 300]));
+            model_transform = model_transform.times(Mat4.translation([0, 0, -150]))
+                                             .times(Mat4.scale([300, 1, 370]));
             this.shapes.ground.draw(this.globals.graphics_state, model_transform, this.grass_texture);
         }
 
@@ -128,6 +132,39 @@ window.Xplore = window.classes.Xplore =
 
         }
 
+        drawFire() {
+            // Draw a fire at (x = -100, y = 0, z = -280 )
+            let loc = Mat4.identity().times(Mat4.translation([-100,0,-280]))
+
+            let wood1 = loc.times(Mat4.rotation(0.78, Vec.of(0,1,0)))
+                           .times(Mat4.scale([3,0.5,0.5]));     
+                                             
+            let wood2 = loc.times(Mat4.rotation(-0.78, Vec.of(0,1,0)))
+                           .times(Mat4.scale([3,0.5,0.5]));
+            
+            const t = this.globals.graphics_state.animation_time / 1000;               
+            let fireSize1 = 2 +   0.5*Math.sin(10*t);  
+            let fireSize2 = 1 + 0.3*Math.sin(25*(t-1)); 
+            let fireSize3 = 0.6 + 0.2*Math.sin(40*(t-2));              
+
+            let fire1 = loc.times(Mat4.translation([0.3,0.5,-0.3]))
+                           .times(Mat4.scale([1,fireSize1,1]));
+
+            let fire2 = loc.times(Mat4.translation([-0.3,0.5,-0.3]))
+                           .times(Mat4.scale([1,fireSize2,1]));              
+            
+            let fire3 = loc.times(Mat4.translation([0,0.5,0.3]))
+                           .times(Mat4.scale([1,fireSize3,1])); 
+            
+
+            this.shapes.box.draw(this.globals.graphics_state, wood1, this.materials.bark)
+            this.shapes.box.draw(this.globals.graphics_state, wood2, this.materials.bark)
+            this.shapes.pyramid.draw(this.globals.graphics_state, fire1, this.materials.fire1)
+            this.shapes.pyramid.draw(this.globals.graphics_state, fire2, this.materials.fire2)
+            this.shapes.pyramid.draw(this.globals.graphics_state, fire3, this.materials.fire3)
+
+        }
+
         drawForest() {
             var i;
             // Draw 10 trees on each side to make a path
@@ -145,6 +182,10 @@ window.Xplore = window.classes.Xplore =
             for (j = 0; j < 50; j++) {
                 this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
             }
+
+            // Draw a fire
+            this.drawFire();
+            
         }
 
 
@@ -154,6 +195,8 @@ window.Xplore = window.classes.Xplore =
             this.drawGround();
 
             this.drawForest();
+
+            
             
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
