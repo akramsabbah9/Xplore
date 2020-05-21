@@ -61,11 +61,11 @@ window.Xplore = window.classes.Xplore =
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
-            /*this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.moving = () => 1, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.moving = () => 1, () => undefined, () => this.moving = () => 0 );
             this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.moving = () => 2, () => undefined, () => this.moving = () => 0 );
+            this.new_line();
             this.key_triggered_button( "Rotate Left",  [ "ArrowLeft" ], () => this.moving = () => 3, () => undefined, () => this.moving = () => 0 );
             this.key_triggered_button( "Rotate Right",  [ "ArrowRight" ], () => this.moving = () => 4, () => undefined, () => this.moving = () => 0 );
-            */
         }
 
         drawGround() {
@@ -122,10 +122,10 @@ window.Xplore = window.classes.Xplore =
 
             this.drawForest();
 
-            //graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
+            graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
         }
 
-        /*move_player(camera) {
+        move_player(camera) {
             // rotate camera by rot_vec. Then move in the desired direction.
 
             if (this.moving)
@@ -137,7 +137,7 @@ window.Xplore = window.classes.Xplore =
                         camera = camera.times(Mat4.translation([0, 0, -0.5]));
                         break;
                     case 3:
-                        camera = camera.times(Mat4.rotation(0, Vec.of(0, 1, 0)));
+                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, 1, 0)));
                         break;
                     case 4:
                         camera = camera.times(Mat4.rotation(0.05, Vec.of(0, -1, 0)));
@@ -148,7 +148,7 @@ window.Xplore = window.classes.Xplore =
                 }
 
             return camera;
-        }*/
+        }
     };
 
 
