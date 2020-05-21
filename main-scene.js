@@ -8,13 +8,9 @@ window.Xplore = window.classes.Xplore =
                 //context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
-<<<<<<< HEAD
             //context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,3,15 ), Vec.of( 0,0,0 ), Vec.of(0,1,0) );
             context.globals.graphics_state.camera_transform = Mat4.translation([0, -3, 0]);  // Locate the camera here (inverted matrix).
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
-=======
-            context.globals.graphics_state.camera_transform = Mat4.translation([0, -3, 0]);  // Locate the camera here (inverted matrix).
->>>>>>> master
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             const shapes = {
@@ -22,7 +18,6 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid()
-<<<<<<< HEAD
             };
 
             this.materials = {
@@ -36,21 +31,6 @@ window.Xplore = window.classes.Xplore =
                 green3:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.6,0.2,1 ), {ambient: 0.6}),
             };
 
-=======
-            };
-
-            this.materials = {
-                grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
-                    ambient: .4,
-                    diffusivity: .4
-                }),
-                bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
-                green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
-                green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
-                green3:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.6,0.2,1 ), {ambient: 0.6}),
-            };
-
->>>>>>> master
 
             // At the beginning of our program, load one of each of these shape
             // definitions onto the GPU.  NOTE:  Only do this ONCE per shape
@@ -77,7 +57,6 @@ window.Xplore = window.classes.Xplore =
             this.randomZ =  [...Array(100)].map(() => Math.floor(300*Math.random() + -370));
             // 100 random tree sizes
             this.randomSize = [...Array(100)].map(() => Math.floor(10*Math.random() + 5));
-<<<<<<< HEAD
 
             // initialize movement vars & listeners
             this.movx = this.movz = 0;
@@ -98,15 +77,6 @@ window.Xplore = window.classes.Xplore =
                 e.preventDefault();
                 if (this.mouse_down) this.update_mouse(e, context.canvas);
             });
-=======
-        }
-
-
-        make_control_panel()
-        // Draw the scene's wbuttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        {
-
->>>>>>> master
         }
 
         drawGround() {
@@ -115,7 +85,6 @@ window.Xplore = window.classes.Xplore =
             this.shapes.ground.draw(this.globals.graphics_state, model_transform, this.grass_texture);
         }
 
-<<<<<<< HEAD
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
@@ -146,16 +115,6 @@ window.Xplore = window.classes.Xplore =
             let leaves_bottom_transform = loc.times(Mat4.translation([0,.8*height,0]))
                                             .times(Mat4.scale([1.5*height,1*height,1.5*height]));
 
-=======
-        drawTree(x, z, height) {
-            let loc = Mat4.identity().times(Mat4.translation([x,0,z]));
-
-            let trunk_transform = loc.times(Mat4.scale([1,height,1]));
-
-            let leaves_bottom_transform = loc.times(Mat4.translation([0,.8*height,0]))
-                                            .times(Mat4.scale([1.5*height,1*height,1.5*height]));
-
->>>>>>> master
             let leaves_middle_transform = loc.times(Mat4.translation([0,1.2*height,0]))
                                             .times(Mat4.scale([1.3*height,1*height,1.3*height]));
 
@@ -181,19 +140,11 @@ window.Xplore = window.classes.Xplore =
                 }
             }
 
-<<<<<<< HEAD
-            /*// Draw 50 tress in "random" places, in area (-150 < x < 150   and    370 < z < 70)
-            var j;
-            for (j = 0; j < 50; j++) {
-                this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
-            }*/
-=======
             // Draw 50 tress in "random" places, in area (-150 < x < 150   and    370 < z < 70)
             var j;
             for (j = 0; j < 50; j++) {
                 this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
             }
->>>>>>> master
         }
 
 
@@ -201,7 +152,6 @@ window.Xplore = window.classes.Xplore =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
             this.drawGround();
-<<<<<<< HEAD
 
             this.drawForest();
             
@@ -228,11 +178,6 @@ window.Xplore = window.classes.Xplore =
         move() { // move camera, then update the undo/redo matrices
             const h_trans = (this.mouse_down) ? 0.01*this.m_rh : 0.01*this.roth;
             const v_trans = (this.mouse_down) ? 0.01*this.m_rv : 0.01*this.rotv;
-=======
-
-            this.drawForest();
-        }
->>>>>>> master
 
             const a = this.ctrans.times(this.ud)
                                  .times(Mat4.translation([this.movx, 0, this.movz]))
