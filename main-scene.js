@@ -8,7 +8,9 @@ window.Xplore = window.classes.Xplore =
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
+            //context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,3,15 ), Vec.of( 0,0,0 ), Vec.of(0,1,0) );
             context.globals.graphics_state.camera_transform = Mat4.translation([0, -3, 0]);  // Locate the camera here (inverted matrix).
+            this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             const shapes = {
@@ -55,17 +57,28 @@ window.Xplore = window.classes.Xplore =
             this.randomZ =  [...Array(100)].map(() => Math.floor(300*Math.random() + -370));
             // 100 random tree sizes
             this.randomSize = [...Array(100)].map(() => Math.floor(10*Math.random() + 5));
+
+            // initialize movement vars
+            this.movx = this.movz = 0;
+            this.rotv = this.roth = 0;
+            this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
         }
 
 
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
-            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.moving = () => 1, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.moving = () => 2, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.movz = -1, () => undefined, () => this.movz = 0 );
+            this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.movz = 1, () => undefined, () => this.movz = 0 );
             this.new_line();
-            this.key_triggered_button( "Rotate Left",  [ "ArrowLeft" ], () => this.moving = () => 3, () => undefined, () => this.moving = () => 0 );
-            this.key_triggered_button( "Rotate Right",  [ "ArrowRight" ], () => this.moving = () => 4, () => undefined, () => this.moving = () => 0 );
+            this.key_triggered_button( "Move Left",  [ "ArrowLeft" ], () => this.movx = -1, () => undefined, () => this.movx = 0 );
+            this.key_triggered_button( "Move Right",  [ "ArrowRight" ], () => this.movx = 1, () => undefined, () => this.movx = 0 );
+            this.new_line();
+            this.key_triggered_button( "Look Upwards",  [ "i" ], () => this.rotv = 1, () => undefined, () => this.rotv = 0 );
+            this.key_triggered_button( "Look Downwards",  [ "k" ], () => this.rotv = -1, () => undefined, () => this.rotv = 0 );
+            this.new_line();
+            this.key_triggered_button( "Look Left",  [ "j" ], () => this.roth = 1, () => undefined, () => this.roth = 0 );
+            this.key_triggered_button( "Look Right",  [ "l" ], () => this.roth = -1, () => undefined, () => this.roth = 0 );
         }
 
         drawGround() {
@@ -107,11 +120,11 @@ window.Xplore = window.classes.Xplore =
                 }
             }
 
-            // Draw 50 tress in "random" places, in area (-150 < x < 150   and    370 < z < 70)
+            /*// Draw 50 tress in "random" places, in area (-150 < x < 150   and    370 < z < 70)
             var j;
             for (j = 0; j < 50; j++) {
                 this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
-            }
+            }*/
         }
 
 
@@ -121,33 +134,30 @@ window.Xplore = window.classes.Xplore =
             this.drawGround();
 
             this.drawForest();
-
-            graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
+            
+            this.ctrans = this.move();
+            graphics_state.camera_transform = Mat4.inverse(this.ctrans);
+            //graphics_state.camera_transform = this.move_player(graphics_state.camera_transform);
         }
 
-        move_player(camera) {
-            // rotate camera by rot_vec. Then move in the desired direction.
+        move() {
+            //console.log(this.rd);
+            /*const a = this.ctrans.times(Mat4.rotation(0.01*this.rotv, Vec.of(1, 0, 0)))
+                              .times(this.rd)
+                              .times(Mat4.rotation(0.01*this.roth, Vec.of(0, 1, 0)))
+                              .times(Mat4.translation([this.movx, 0, this.movz]))
+                              .times(this.ud);*/
+                              
+            const a = this.ctrans.times(this.ud)
+                                 .times(Mat4.translation([this.movx, 0, this.movz]))
+                                 .times(Mat4.rotation(0.01*this.roth, Vec.of(0, 1, 0)))
+                                 .times(this.rd)
+                                 .times(Mat4.rotation(0.01*this.rotv, Vec.of(1, 0, 0)));
+                              
 
-            if (this.moving)
-                switch(this.moving()) {
-                    case 1:
-                        camera = camera.times(Mat4.translation([0, 0, 0.5]));
-                        break;
-                    case 2:
-                        camera = camera.times(Mat4.translation([0, 0, -0.5]));
-                        break;
-                    case 3:
-                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, 1, 0)));
-                        break;
-                    case 4:
-                        camera = camera.times(Mat4.rotation(0.05, Vec.of(0, -1, 0)));
-                        break;
-                    default:
-                        //console.log(camera);
-                        break;
-                }
-
-            return camera;
+            this.ud = this.ud.times(Mat4.rotation(-0.01*this.rotv, Vec.of(1, 0, 0)));
+            this.rd = this.rd.times(Mat4.rotation(0.01*this.rotv, Vec.of(1, 0, 0)));
+            return a;
         }
     };
 
