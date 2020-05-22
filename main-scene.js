@@ -8,13 +8,15 @@ window.Xplore = window.classes.Xplore =
                 //context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
-            //context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,3,15 ), Vec.of( 0,0,0 ), Vec.of(0,1,0) );
-            context.globals.graphics_state.camera_transform = Mat4.translation([0, -3, 0]);  // Locate the camera here (inverted matrix).
+            context.globals.graphics_state.camera_transform = Mat4.translation([0, -5, 3]);  // Locate the camera here (inverted matrix).
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
+            this.lvl1_complete = false;
+
             const shapes = {
                 'box': new Cube(),
+                'border': new Border(),
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid()
@@ -24,6 +26,10 @@ window.Xplore = window.classes.Xplore =
                 grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
                     ambient: .4,
                     diffusivity: .4
+                }),
+                sky: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
+                    ambient: 1,
+                    diffusivity: .3
                 }),
                 bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
@@ -49,12 +55,15 @@ window.Xplore = window.classes.Xplore =
                 ambient: .4,
                 diffusivity: .4
             });
+
             this.white = context.get_instance(Basic_Shader).material();
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
             this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
+            this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')})
+            this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')})
 
-            this.lights = [new Light(Vec.of(0, 5, 5, 1), Color.of(1, .4, 1, 1), 100000)];
+            this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
 
             this.randomX =  [...Array(100)].map(() => Math.floor(300*Math.random() + -150));
             this.randomZ =  [...Array(100)].map(() => Math.floor(300*Math.random() + -370));
@@ -178,6 +187,12 @@ window.Xplore = window.classes.Xplore =
 
         }
 
+        drawBorder(x, y, z, size, height, texture){
+            let loc = Mat4.translation([x,y,z])
+            loc = loc.times(Mat4.scale([size, height, size]))
+            this.shapes.border.draw(this.globals.graphics_state, loc, texture)
+        }
+
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
             return Vec.of(event.clientX - (rect.left + rect.right) / 2,
@@ -214,10 +229,28 @@ window.Xplore = window.classes.Xplore =
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
-            this.drawGround(0, 0, -200, 400, this.grass_texture);
+            if (!this.lvl1_complete) {
+                this.drawGround(0, 0, -200, 400, this.grass_texture);
+                this.drawForest();
 
-            this.drawForest();
+            }
+            else {
+                this.drawGround(0, 0, -200, 400, this.materials.fire1.override({ambient:0.5}));
+            }
 
+            this.ctrans = this.move();
+            graphics_state.camera_transform = Mat4.inverse(this.ctrans);
+
+            this.drawGround(0, 50, -200, 400, this.sky_texture)
+
+            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
+
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+
+            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
+                this.lvl1_complete = true
+            }
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
         }
