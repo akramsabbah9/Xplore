@@ -238,9 +238,6 @@ window.Xplore = window.classes.Xplore =
                 this.drawGround(0, 0, -200, 400, this.materials.fire1.override({ambient:0.5}));
             }
 
-            this.ctrans = this.move();
-            graphics_state.camera_transform = Mat4.inverse(this.ctrans);
-
             this.drawGround(0, 50, -200, 400, this.sky_texture)
 
             this.drawBorder(0, -10, -200, 400, 100, this.mountains)
