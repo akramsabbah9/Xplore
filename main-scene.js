@@ -94,6 +94,12 @@ window.Xplore = window.classes.Xplore =
             this.new_line();
             this.key_triggered_button( "Look Left",  [ "j" ], () => this.roth = 1, () => undefined, () => this.roth = 0 );
             this.key_triggered_button( "Look Right",  [ "l" ], () => this.roth = -1, () => undefined, () => this.roth = 0 );
+            this.new_line();
+            this.live_string(box => box.textContent = "Position: " + this.ctrans[0][3] + ", " + this.ctrans[1][3]
+                + ", " + this.ctrans[2][3]);
+            this.new_line();
+            /*this.live_string(box => box.textContent = "Facing: " + ((this.z_axis[0] > 0 ? "West " : "East ")
+                + (this.z_axis[1] > 0 ? "Down " : "Up ") + (this.z_axis[2] > 0 ? "North" : "South")));*/
         }
 
         drawGround() {
