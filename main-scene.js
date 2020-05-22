@@ -15,8 +15,16 @@ window.Xplore = window.classes.Xplore =
                 'box': new Cube(),
                 'ground': new Ground(),
                 'triangle': new Triangle(),
-                'pyramid': new Pyramid()
+                'pyramid': new Pyramid(),
+                'model': new Shape_From_File("assets/arizona.obj")
             };
+            const models = {
+                'model': new Shape_From_File("assets/arizona.obj")
+            }
+//             this.stars = new Material(new defs.Textured_Phong(1), {
+//                     color: color(0, 0, 0, 1),
+//                     ambient: 1, diffusivity: 1, specularity: 0.1, texture: new Texture("assets/arizona.png")
+//                 });
 
             this.materials = {
                 grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
@@ -27,6 +35,9 @@ window.Xplore = window.classes.Xplore =
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
                 green3:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.6,0.2,1 ), {ambient: 0.6}),
+                stars:    context.get_instance( Phong_Shader ).material( Color.of( 0, 0, 0, 1  ), {ambient: 1,
+                        diffusivity:1,
+                        specularity: 0.1 })
             };
 
 
@@ -48,6 +59,7 @@ window.Xplore = window.classes.Xplore =
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
             this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
+            this.materials.stars = this.stars.override({texture: context.get_instance('assets/arizona.png')})
 
             this.lights = [new Light(Vec.of(0, 5, 5, 1), Color.of(1, .4, 1, 1), 100000)];
 
@@ -110,6 +122,11 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawModels () {
+            let modelt = Mat4.identity().times(Mat4.scale([25,25,25]));
+            this.shapes.model.draw(this.globals.graphics_state, modelt, this.materials.stars);
+//             this.shapes.model.draw(this.context, this.globals.graphics_state, modelt, this.stars);
+        }
 
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
@@ -117,6 +134,8 @@ window.Xplore = window.classes.Xplore =
             this.drawGround();
 
             this.drawForest();
+
+            this.drawModels();
         }
 
     };
