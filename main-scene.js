@@ -16,16 +16,10 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                'model': new Shape_From_File("assets/tree.obj"),
-                'tree': new Tree()
+                'model': new Shape_From_File("assets/fish.obj"),
+                'tree': new Tree(),
+                'fish': new Fish()
             };
-            const models = {
-                'model': new Shape_From_File("assets/tree.obj")
-            }
-//             this.stars = new Material(new defs.Textured_Phong(1), {
-//                     color: color(0, 0, 0, 1),
-//                     ambient: 1, diffusivity: 1, specularity: 0.1, texture: new Texture("assets/newspaper.png")
-//                 });
 
             this.materials = {
                 grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
@@ -122,12 +116,12 @@ window.Xplore = window.classes.Xplore =
                 this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
             }
         }
-
+        //textures not working for fish, based on obj file
         drawModels () {
             let modelt = Mat4.identity().times(Mat4.translation([25,25,25])).times(Mat4.scale([25,25,25]));
-            this.shapes.tree.draw(this.globals.graphics_state, modelt, this.materials.green1);
-//             this.shapes.model.draw(this.globals.graphics_state, modelt, this.stars);
-//             this.shapes.model.draw(this.context, this.globals.graphics_state, modelt, this.stars);
+//             this.shapes.fish.draw(this.globals.graphics_state, modelt, this.materials.green1);
+            this.shapes.tree.draw(this.globals.graphics_state, modelt, this.grass_texture);
+           
         }
 
         display(graphics_state) {
