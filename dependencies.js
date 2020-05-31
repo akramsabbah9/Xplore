@@ -920,14 +920,18 @@ window.Shape_From_File = window.classes.Shape_From_File =
                 for (var j = 0; j < this.indices.length; j++){
                     this.indicestr += this.indices[j] + ",";
                 }
-                console.log("Start print")
+                console.log("Put these arrays in your class that extends shape");
+                console.log("positions");
                 console.log(this.positionstr);
                 console.log("\n");
+                console.log("normals");
                 console.log(this.normalstr);
                 console.log("\n");
+                console.log("texture_coordstr");
                 console.log(this.texture_coordstr);
                 console.log("\n");
-                console.log(this.indicestr)
+                console.log("indices");
+                console.log(this.indicestr);
             }
             this.normalize_positions(false);
             this.ready = true;

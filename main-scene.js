@@ -16,7 +16,7 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                'model': new Shape_From_File("assets/fish.obj"),
+                'model': new Shape_From_File("assets/fish.obj"), //obj data than is printed rendering wont work
                 'tree': new Tree(),
                 'fish': new Fish()
             };
