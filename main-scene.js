@@ -12,7 +12,7 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.lvl1_complete = false;
+            this.current_level = 1;
 
             const shapes = {
                 'box': new Cube(),
@@ -193,6 +193,21 @@ window.Xplore = window.classes.Xplore =
             this.shapes.border.draw(this.globals.graphics_state, loc, texture)
         }
 
+        drawLevelOne(){
+            this.drawGround(0, 0, -200, 400, this.grass_texture);
+            this.drawForest();
+            this.drawGround(0, 50, -200, 400, this.sky_texture)
+
+            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
+
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+
+            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
+                this.current_level = 2;
+            }
+        }
+
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
             return Vec.of(event.clientX - (rect.left + rect.right) / 2,
@@ -229,25 +244,13 @@ window.Xplore = window.classes.Xplore =
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
-            if (!this.lvl1_complete) {
-                this.drawGround(0, 0, -200, 400, this.grass_texture);
-                this.drawForest();
+            switch(this.current_level){
+                case 1: this.drawLevelOne(); break;
+                case 2: break;
 
-            }
-            else {
-                this.drawGround(0, 0, -200, 400, this.materials.fire1.override({ambient:0.5}));
+                default: this.drawLevelOne();
             }
 
-            this.drawGround(0, 50, -200, 400, this.sky_texture)
-
-            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
-
-            let cam_x = this.ctrans[0][3]
-            let cam_z = this.ctrans[2][3]
-
-            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
-                this.lvl1_complete = true
-            }
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
         }
