@@ -4,8 +4,8 @@ window.Xplore = window.classes.Xplore =
             // The scene begins by requesting the camera, shapes, and materials it will need.
             super(context, control_box);
             // First, include a secondary Scene that provides movement controls:
-            if (!context.globals.has_controls)
-                context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
+            //if (!context.globals.has_controls)
+                //context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
 
@@ -22,7 +22,6 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                'player': this.player.model
             };
 
             this.materials = {
@@ -123,16 +122,16 @@ window.Xplore = window.classes.Xplore =
 
             let trunk_transform = loc.times(Mat4.scale([1,height,1]));
 
-            let leaves_bottom_transform = loc.times(Mat4.translation([0,.2*height,0]))
-                                            .times(Mat4.scale([.3*height,.8*height,.3*height]));
+            let leaves_bottom_transform = loc.times(Mat4.translation([0,.8*height,0]))
+                                            .times(Mat4.scale([1.5*height,1*height,1.5*height]));
 
-            let leaves_middle_transform = loc.times(Mat4.translation([0,.4*height,0]))
-                                            .times(Mat4.scale([.3*height,.6*height,.3*height]));
+            let leaves_middle_transform = loc.times(Mat4.translation([0,1.2*height,0]))
+                                            .times(Mat4.scale([1.3*height,1*height,1.3*height]));
 
-            let leaves_top_transform = loc.times(Mat4.translation([0,.6*height,0]))
-                                        .times(Mat4.scale([.3*height,.4*height,.3*height]));
+            let leaves_top_transform = loc.times(Mat4.translation([0,1.6*height,0]))
+                                        .times(Mat4.scale([1*height,1*height,1*height]));
 
-            this.shapes.pyramid.draw(this.globals.graphics_state, trunk_transform, this.materials.bark);
+            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.materials.bark);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.materials.green1);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.materials.green2);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.materials.green3);
@@ -260,18 +259,6 @@ window.Xplore = window.classes.Xplore =
 
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
-
-            this.drawGround(0, 50, -200, 400, this.sun)
-
-            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
-
-            let cam_x = this.ctrans[0][3]
-            let cam_z = this.ctrans[2][3]
-
-            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
-                this.lvl1_complete = true
-            }
-
 
         }
 

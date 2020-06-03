@@ -292,18 +292,6 @@ window.Subdivision_Sphere = window.classes.Subdivision_Sphere =
         }
     };
 
-window.Player = window.classes.Player =
-    class Player  {
-        constructor(graphics_state, start_loc = Vec.of(0,0,0)){
-            Object.assign(this, {graphics_state, model: new Subdivision_Sphere(4), loc: Mat4.identity().times(Mat4.translation(start_loc))})
-        }
-
-        translateLoc(transform){
-            this.loc = this.loc.times(transform)
-            this.graphics_state.camera_transform.times(transform)
-        }
-    };
-
 
 window.Basic_Shader = window.classes.Basic_Shader =
     class Basic_Shader extends Shader             // Subclasses of Shader each store and manage a complete GPU program.  This Shader is
