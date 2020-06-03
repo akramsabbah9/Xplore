@@ -64,6 +64,38 @@ window.Border = window.classes.Border =
         }
     };
 
+window.Border = window.classes.Border =
+    class Border extends Shape {
+    constructor() {
+        super("positions", "normals", "texture_coords");                                   // Name the values we'll define per each vertex.
+
+        this.positions.push(...Vec.cast(
+            [-1 / 2, 0, 1 / 2], [1 / 2, 0, 1 / 2], [-1 / 2, 1, 1 / 2], [1 / 2, 1, 1 / 2], //front
+            [1 / 2, 0, 1 / 2], [1 / 2, 0, -1 / 2], [1 / 2, 1, 1 / 2], [1 / 2, 1, -1 / 2], //right
+            [1 / 2, 0, -1 / 2], [-1 / 2, 0, -1 / 2], [1 / 2, 1, -1 / 2], [-1 / 2, 1, -1 / 2], //back
+            [-1 / 2, 0, -1 / 2], [-1 / 2, 0, 1 / 2], [-1 / 2, 1, -1 / 2], [-1 / 2, 1, 1 / 2], //left
+        ));
+
+        this.normals.push(...Vec.cast(
+            [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1],
+            [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0],
+            [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1],
+            [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [-1, 0, 0],
+        ));
+
+        this.texture_coords.push(...Vec.cast(
+            [0, 0], [1, 0], [0, 1], [1, 1],
+            [0, 0], [1, 0], [0, 1], [1, 1],
+            [0, 0], [1, 0], [0, 1], [1, 1],
+            [0, 0], [1, 0], [0, 1], [1, 1],
+        ))
+
+        this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
+            14, 13, 15, 14);
+    }
+};
+
+
 window.Triangle = window.classes.Triangle =
     class Triangle extends Shape    // The simplest possible Shape – one triangle.  It has 3 vertices, each
     {
@@ -257,6 +289,18 @@ window.Subdivision_Sphere = window.classes.Subdivision_Sphere =
             this.subdivideTriangle(ab, b, bc, count - 1);          // fourth vertex index in our list takes you down one level of detail,
             this.subdivideTriangle(ac, bc, c, count - 1);          // and so on, due to the way we're building it.
             this.subdivideTriangle(ab, bc, ac, count - 1);
+        }
+    };
+
+window.Player = window.classes.Player =
+    class Player  {
+        constructor(graphics_state, start_loc = Vec.of(0,0,0)){
+            Object.assign(this, {graphics_state, model: new Subdivision_Sphere(4), loc: Mat4.identity().times(Mat4.translation(start_loc))})
+        }
+
+        translateLoc(transform){
+            this.loc = this.loc.times(transform)
+            this.graphics_state.camera_transform.times(transform)
         }
     };
 
@@ -693,6 +737,7 @@ window.Movement_Controls = window.classes.Movement_Controls =
             const m = this.speed_multiplier * this.meters_per_frame,
                 r = this.speed_multiplier * this.radians_per_frame;
             this.first_person_flyaround(dt * r, dt * m);     // Do first-person.  Scale the normal camera aiming speed by dt for smoothness.
+
             if (this.mouse.anchor)                            // Also apply third-person "arcball" camera mode if a mouse drag is occurring.
                 this.third_person_arcball(dt * r);
 
@@ -701,5 +746,3 @@ window.Movement_Controls = window.classes.Movement_Controls =
             this.z_axis = inv.times(Vec.of(0, 0, 1, 0));      // Log some values.
         }
     };
-
-

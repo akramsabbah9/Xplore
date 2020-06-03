@@ -4,22 +4,25 @@ window.Xplore = window.classes.Xplore =
             // The scene begins by requesting the camera, shapes, and materials it will need.
             super(context, control_box);
             // First, include a secondary Scene that provides movement controls:
-            //if (!context.globals.has_controls)
-                //context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
+            if (!context.globals.has_controls)
+                context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
             const r = context.width / context.height;
+
             context.globals.graphics_state.camera_transform = Mat4.translation([0, -5, 3]);  // Locate the camera here (inverted matrix).
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             this.current_level = 1;
 
+
             const shapes = {
                 'box': new Cube(),
                 'border': new Border(),
                 'ground': new Ground(),
                 'triangle': new Triangle(),
-                'pyramid': new Pyramid()
+                'pyramid': new Pyramid(),
+                'player': this.player.model
             };
 
             this.materials = {
@@ -60,10 +63,12 @@ window.Xplore = window.classes.Xplore =
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
             this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
+
             this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')})
             this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')})
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
+
 
             this.randomX =  [...Array(100)].map(() => Math.floor(300*Math.random() + -150));
             this.randomZ =  [...Array(100)].map(() => Math.floor(300*Math.random() + -370));
@@ -118,16 +123,16 @@ window.Xplore = window.classes.Xplore =
 
             let trunk_transform = loc.times(Mat4.scale([1,height,1]));
 
-            let leaves_bottom_transform = loc.times(Mat4.translation([0,.8*height,0]))
-                                            .times(Mat4.scale([1.5*height,1*height,1.5*height]));
+            let leaves_bottom_transform = loc.times(Mat4.translation([0,.2*height,0]))
+                                            .times(Mat4.scale([.3*height,.8*height,.3*height]));
 
-            let leaves_middle_transform = loc.times(Mat4.translation([0,1.2*height,0]))
-                                            .times(Mat4.scale([1.3*height,1*height,1.3*height]));
+            let leaves_middle_transform = loc.times(Mat4.translation([0,.4*height,0]))
+                                            .times(Mat4.scale([.3*height,.6*height,.3*height]));
 
-            let leaves_top_transform = loc.times(Mat4.translation([0,1.6*height,0]))
-                                        .times(Mat4.scale([1*height,1*height,1*height]));
+            let leaves_top_transform = loc.times(Mat4.translation([0,.6*height,0]))
+                                        .times(Mat4.scale([.3*height,.4*height,.3*height]));
 
-            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.materials.bark);
+            this.shapes.pyramid.draw(this.globals.graphics_state, trunk_transform, this.materials.bark);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.materials.green1);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.materials.green2);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.materials.green3);
@@ -244,15 +249,30 @@ window.Xplore = window.classes.Xplore =
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
+
             switch(this.current_level){
                 case 1: this.drawLevelOne(); break;
                 case 2: break;
 
                 default: this.drawLevelOne();
+
             }
 
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
+
+            this.drawGround(0, 50, -200, 400, this.sun)
+
+            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
+
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+
+            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
+                this.lvl1_complete = true
+            }
+
+
         }
 
     };
