@@ -385,8 +385,8 @@ class Shape extends Vertex_Buffer
 
 window.Graphics_State = window.tiny_graphics.Graphics_State =
 class Graphics_State                                            // Stores things that affect multiple shapes, such as lights and the camera.
-{ constructor( camera_transform = Mat4.identity(), projection_transform = Mat4.identity(), player_transform = Mat4.identity() )
-    { Object.assign( this, { camera_transform, projection_transform, player_transform, animation_time: 0, animation_delta_time: 0, lights: [] } ); }
+{ constructor( camera_transform = Mat4.identity(), projection_transform = Mat4.identity())
+    { Object.assign( this, { camera_transform, projection_transform, animation_time: 0, animation_delta_time: 0, lights: [] } ); }
 }
 
 window.Light = window.tiny_graphics.Light =
