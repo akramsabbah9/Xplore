@@ -22,6 +22,7 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
+                'sphere': new Subdivision_Sphere(4),
             };
 
             this.materials = {
@@ -43,6 +44,8 @@ window.Xplore = window.classes.Xplore =
 
                 // lava scene
                 glass:    context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 0.7)),
+                lava:     context.get_instance(Texture_Scroll_X).material(Color.of(0, 0, 0, 1), 
+                                                    {ambient: 1, texture: context.get_instance("assets/lava.jpg", false)} ),
             };
 
 
@@ -64,10 +67,12 @@ window.Xplore = window.classes.Xplore =
             this.white = context.get_instance(Basic_Shader).material();
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
-            this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
+            this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')});
 
-            this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')})
-            this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')})
+            this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')});
+            this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')});
+            
+            this.nebula = this.materials.sky.override({texture: context.get_instance('assets/night.jpg')});
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
 
@@ -126,87 +131,13 @@ window.Xplore = window.classes.Xplore =
             this.shapes.ground.draw(this.globals.graphics_state, model_transform, texture);
         }
 
-        drawTree(x, z, height) {
-            let loc = Mat4.identity().times(Mat4.translation([x,0,z]));
-
-            let trunk_transform = loc.times(Mat4.scale([1,height,1]));
-
-            let leaves_bottom_transform = loc.times(Mat4.translation([0,.8*height,0]))
-                                            .times(Mat4.scale([1.5*height,1*height,1.5*height]));
-
-            let leaves_middle_transform = loc.times(Mat4.translation([0,1.2*height,0]))
-                                            .times(Mat4.scale([1.3*height,1*height,1.3*height]));
-
-            let leaves_top_transform = loc.times(Mat4.translation([0,1.6*height,0]))
-                                        .times(Mat4.scale([1*height,1*height,1*height]));
-
-            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.materials.bark);
-            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.materials.green1);
-            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.materials.green2);
-            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.materials.green3);
-
-        }
-
-        drawForest() {
-            var i;
-            // Draw 10 trees on each side to make a path
-            for (i = 0; i < 10; i++) {
-                this.drawTree( 8,  i*-7,  5)
-                this.drawTree(-8, i*-7,  5)
-                // Draw 5 trees to close path behind character
-                if (i%2 == 0) {
-                    this.drawTree(1.8*i - 8, 0, 10);
-                }
-            }
-
-            // Draw 50 tress in "random" places, in area (-150 < x < 150   and    370 < z < 70)
-            var j;
-            for (j = 0; j < 50; j++) {
-                this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
-            }
-            this.drawFire(-100, 0, -280);
-        }
-
-        drawFire(x, y, z) {
-            // Draw a fire at (x = -100, y = 0, z = -280 )
-            let loc = Mat4.identity().times(Mat4.translation([x, y, z]))
-
-            let wood1 = loc.times(Mat4.rotation(0.78, Vec.of(0,1,0)))
-                .times(Mat4.scale([3,0.5,0.5]));
-
-            let wood2 = loc.times(Mat4.rotation(-0.78, Vec.of(0,1,0)))
-                .times(Mat4.scale([3,0.5,0.5]));
-
-            const t = this.globals.graphics_state.animation_time / 1000;
-            let fireSize1 = 2 +   0.5*Math.sin(10*t);
-            let fireSize2 = 1 + 0.3*Math.sin(25*(t-1));
-            let fireSize3 = 0.6 + 0.2*Math.sin(40*(t-2));
-
-            let fire1 = loc.times(Mat4.translation([0.3,0.5,-0.3]))
-                .times(Mat4.scale([1,fireSize1,1]));
-
-            let fire2 = loc.times(Mat4.translation([-0.3,0.5,-0.3]))
-                .times(Mat4.scale([1,fireSize2,1]));
-
-            let fire3 = loc.times(Mat4.translation([0,0.5,0.3]))
-                .times(Mat4.scale([1,fireSize3,1]));
-
-
-            this.shapes.box.draw(this.globals.graphics_state, wood1, this.materials.bark)
-            this.shapes.box.draw(this.globals.graphics_state, wood2, this.materials.bark)
-            this.shapes.pyramid.draw(this.globals.graphics_state, fire1, this.materials.fire1)
-            this.shapes.pyramid.draw(this.globals.graphics_state, fire2, this.materials.fire2)
-            this.shapes.pyramid.draw(this.globals.graphics_state, fire3, this.materials.fire3)
-
-        }
-
         drawBorder(x, y, z, size, height, texture){
             let loc = Mat4.translation([x,y,z])
             loc = loc.times(Mat4.scale([size, height, size]))
             this.shapes.border.draw(this.globals.graphics_state, loc, texture)
         }
 
-        drawLevelOne(){
+        /*drawLevelOne(){
             this.drawGround(0, 0, -200, 400, this.grass_texture);
             this.drawForest();
             this.drawGround(0, 50, -200, 400, this.sky_texture)
@@ -219,11 +150,26 @@ window.Xplore = window.classes.Xplore =
             if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
                 this.current_level = 2;
             }
+        }*/
+
+        drawShape(shape, x, y, z, size, height, texture) {
+            const trans = Mat4.identity().times(Mat4.translation([x,y,z]))
+                                         .times(Mat4.scale([size, height, size]));
+            shape.draw(this.globals.graphics_state, trans, texture);
         }
 
         drawLavaLevel() {
-            this.drawGround(0, 0, -200, 400, this.materials.glass);
-            this.shapes.pyramid.draw(this.globals.graphics_state, Mat4.identity(), this.materials.green3);
+            this.drawStage();
+        }
+
+        drawStage() {
+            //this.drawShape(this.shapes.box, 0, -101, 0, 400, 100, this.materials.lava);
+            //this.shapes.box.draw(this.globals.graphics_state, Mat4.identity(), this.materials.lava);
+            const sky_trans = Mat4.identity().times(Mat4.translation([0,-300,0]))
+                                             .times(Mat4.scale([600, 600, 600]))
+                                             .times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)));
+            this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.materials.lava);
+            this.drawShape(this.shapes.ground, 0, 0, 0, 400, 400, this.materials.glass);
         }
 
         mouse_position(event, canvas) {
@@ -262,13 +208,8 @@ window.Xplore = window.classes.Xplore =
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
-            switch(this.current_level){
-                case 1: this.drawLavaLevel(); break;
-                //case 2: this.drawLavaLevel(); break;
-
-                default: this.drawLevelOne();
-
-            }
+            this.drawLavaLevel();
+            this.shapes.box.draw(graphics_state, Mat4.identity(), this.nebula);
 
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
@@ -276,3 +217,26 @@ window.Xplore = window.classes.Xplore =
         }
 
     };
+
+class Texture_Scroll_X extends Phong_Shader {
+    fragment_glsl_code() {
+        // ********* FRAGMENT SHADER *********
+        // TODO:  Modify the shader below (right now it's just the same fragment shader as Phong_Shader) for requirement #6.
+        return `
+        uniform sampler2D texture;
+        void main()
+        { if( GOURAUD || COLOR_NORMALS )    // Do smooth "Phong" shading unless options like "Gouraud mode" are wanted instead.
+          { gl_FragColor = VERTEX_COLOR;    // Otherwise, we already have final colors to smear (interpolate) across vertices.            
+            return;
+          }                                 // If we get this far, calculate Smooth "Phong" Shading as opposed to Gouraud Shading.
+                                            // Phong shading is not to be confused with the Phong Reflection Model.
+          // period of rotation is 10s (trial and error)
+          float a_time = mod(animation_time, 10.0); // used https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/mod.xhtml since glsl doesn't use %
+          vec4 tex_color = texture2D( texture, vec2(f_tex_coord[0] + 0.2*a_time, f_tex_coord[1]) );  // Sample the texture image in the correct place.
+                                                                                      // Compute an initial (ambient) color:
+          if( USE_TEXTURE ) gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
+          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
+          gl_FragColor.xyz += phong_model_lights( N );                     // Compute the final color with contributions from lights.
+        }`;
+    }
+}
