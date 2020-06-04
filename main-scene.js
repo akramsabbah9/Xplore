@@ -13,12 +13,11 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.current_level = 1;
-
-
+            this.current_level = 2;
 
             const shapes = {
                 'box': new Cube(),
+                'square': new Square(),
                 'border': new Border(),
                 'ground': new Ground(),
                 'triangle': new Triangle(),
@@ -26,14 +25,7 @@ window.Xplore = window.classes.Xplore =
             };
 
             this.materials = {
-                grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
-                    ambient: .4,
-                    diffusivity: .4
-                }),
-                sky: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
-                    ambient: 1,
-                    diffusivity: .3
-                }),
+                white: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {ambient: 1,}),
                 bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
@@ -53,20 +45,16 @@ window.Xplore = window.classes.Xplore =
             // same thing here.
             this.submit_shapes(context, shapes);
 
-            // Make some Material objects available to you:
-            this.clay = context.get_instance(Phong_Shader).material(Color.of(.9, .5, .9, 1), {
+            this.plastic = context.get_instance(Phong_Shader).material(Color.of(.9, .5, .9, 1), {
                 ambient: .4,
-                diffusivity: .4
+                diffusivity: .4,
+                specularity: .6,
             });
 
-            this.white = context.get_instance(Basic_Shader).material();
-            this.plastic = this.clay.override({specularity: .6});
-            this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
-            this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
-
-
-            this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')})
-            this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')})
+            this.grass_texture = this.materials.white.override({texture: context.get_instance("assets/grass.jpg")});
+            this.sky_texture = this.materials.white.override({texture: context.get_instance('assets/sky_texture.jpg')})
+            this.mountains = this.materials.white.override({texture: context.get_instance('assets/mountains.jpg')})
+            this.snow_texture = this.materials.white.override({texture: context.get_instance('assets/snow.jpg')})
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
 
@@ -215,6 +203,34 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawSnow(height, size, speed){
+            let t = (this.globals.graphics_state.animation_time / 1000) % (height/speed);
+            let cam_x = this.ctrans[0][3];
+            let cam_z = this.ctrans[2][3];
+
+            let snow_height = height - speed*t;
+            let fall_transform = Mat4.translation([cam_x - size, snow_height, cam_z + size]);
+
+            var x,z;
+            let trans_transform = fall_transform
+            for (x = 0; x < size; x++){
+                trans_transform = fall_transform.times(Mat4.translation([2*x, 0, 0]))
+                for (z = 0; z > -size; z--){
+                    trans_transform = trans_transform.times(Mat4.translation([0, 0, -2]))
+                    this.shapes.ground.draw(this.globals.graphics_state, trans_transform, this.snow_texture)
+                }
+            }
+        }
+
+        drawLevelTwo(){
+
+
+            this.drawGround(0, 0, -250, 500, this.snow_texture);
+            this.drawSnow(25, 5, 15);
+            this.shapes.pyramid.draw(this.globals.graphics_state, Mat4.identity().times(Mat4.translation([0,0,-300]).times(Mat4.scale([100,100,100]))), this.snow_texture)
+
+        }
+
 
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
@@ -255,7 +271,7 @@ window.Xplore = window.classes.Xplore =
 
             switch(this.current_level){
                 case 1: this.drawLevelOne(); break;
-                case 2: break;
+                case 2: this.drawLevelTwo(); break;
 
                 default: this.drawLevelOne();
 

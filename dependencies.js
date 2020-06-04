@@ -120,7 +120,7 @@ window.Pyramid = window.classes.Pyramid =
     class Pyramid extends Shape {
         // Here's a complete, working example of a Shape subclass.  It is a blueprint for a cube.
         constructor() {
-            super("positions", "normals"); // Name the values we'll define per each vertex.  They'll have positions and normals.
+            super("positions", "normals", "texture_coords"); // Name the values we'll define per each vertex.  They'll have positions and normals.
 
             this.positions.push(...Vec.cast(
                 [-1/2,0,1/2], [1/2,0,1/2], [-1/2,0,-1/2], [1/2,0,-1/2], //bottom
@@ -138,6 +138,15 @@ window.Pyramid = window.classes.Pyramid =
                 [1,1/2,0], [1,1/2,0], [1,1/2,0],
                 [0,1/2,-1], [0,1/2,-1], [0,1/2,-1],
                 [-1,1/2,0], [-1,1/2,0], [-1,1/2,0]
+            ));
+
+
+            this.normals.push(...Vec.cast(
+                [0,0], [1,0], [0,1], [1,1],
+                [0,0], [1/2,1/2], [1,0],
+                [0,0], [1/2,1/2], [1,0],
+                [0,0], [1/2,1/2], [1,0],
+                [0,0], [1/2,1/2], [1,0],
             ));
 
             // Those two lists, positions and normals, fully describe the "vertices".  What's the "i"th vertex?  Simply the combined
