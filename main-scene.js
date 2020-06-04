@@ -16,10 +16,10 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                'model': new Shape_From_File("assets/arizona.obj")
+                'model': new Shape_From_File("assets/newspaper.obj")
             };
             const models = {
-                'model': new Shape_From_File("assets/arizona.obj")
+                'model': new Shape_From_File("assets/newspaper.obj")
             }
 //             this.stars = new Material(new defs.Textured_Phong(1), {
 //                     color: color(0, 0, 0, 1),
@@ -124,7 +124,7 @@ window.Xplore = window.classes.Xplore =
 
         drawModels () {
             let modelt = Mat4.identity().times(Mat4.scale([25,25,25]));
-            this.shapes.model.draw(this.globals.graphics_state, modelt, this.materials.stars);
+            this.shapes.model.draw(this.globals.graphics_state, modelt, this.materials.bark);
 //             this.shapes.model.draw(this.context, this.globals.graphics_state, modelt, this.stars);
         }
 

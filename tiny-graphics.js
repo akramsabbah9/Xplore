@@ -248,8 +248,123 @@ class Code_Manager                            // Break up a string containing co
         }  
     }
 }
+// start added
+// window.Graphics_Card_Object = window.tiny_graphics.Graphics_Card_Object =
+// class Graphics_Card_Object       
+// {                                       // ** Graphics_Card_Object** Extending this base class allows an object to
+//                                         // copy itself onto a WebGL context on demand, whenever it is first used for
+//                                         // a GPU draw command on a context it hasn't seen before.
+//   constructor() 
+//     { this.gpu_instances = new Map() }     // Track which GPU contexts this object has copied itself onto.
+//   copy_onto_graphics_card( context, intial_gpu_representation )
+//     {                           // copy_onto_graphics_card():  Our object might need to register to multiple 
+//                                 // GPU contexts in the case of multiple drawing areas.  If this is a new GPU
+//                                 // context for this object, copy the object to the GPU.  Otherwise, this 
+//                                 // object already has been copied over, so get a pointer to the existing 
+//                                 // instance.  The instance consists of whatever GPU pointers are associated
+//                                 // with this object, as returned by the WebGL calls that copied it to the 
+//                                 // GPU.  GPU-bound objects should override this function, which builds an 
+//                                 // initial instance, so as to populate it with finished pointers. 
+//       const existing_instance = this.gpu_instances.get( context );
 
+//                                 // Warn the user if they are avoidably making too many GPU objects.  Beginner
+//                                 // WebGL programs typically only need to call copy_onto_graphics_card once 
+//                                 // per object; doing it more is expensive, so warn them with an "idiot 
+//                                 // alarm". Don't trigger the idiot alarm if the user is correctly re-using
+//                                 // an existing GPU context and merely overwriting parts of itself.
+//       if( !existing_instance )
+//         { Graphics_Card_Object.idiot_alarm |= 0;     // Start a program-wide counter.
+//           if( Graphics_Card_Object.idiot_alarm++ > 200 )
+//             throw `Error: You are sending a lot of object definitions to the GPU, probably by mistake!  Many of them are likely duplicates, which you
+//                    don't want since sending each one is very slow.  To avoid this, from your display() function avoid ever declaring a Shape Shader
+//                    or Texture (or subclass of these) with "new", thus causing the definition to be re-created and re-transmitted every frame.  
+//                    Instead, call these in your scene's constructor and keep the result as a class member, or otherwise make sure it only happens 
+//                    once.  In the off chance that you have a somehow deformable shape that MUST change every frame, then at least use the special
+//                    arguments of copy_onto_graphics_card to limit which buffers get overwritten every frame to only the necessary ones.`;
+//         }
+//                                                 // Check if this object already exists on that GPU context.
+//       return existing_instance ||             // If necessary, start a new object associated with the context.
+//              this.gpu_instances.set( context, intial_gpu_representation ).get( context );
+//     }
+//   activate( context, ...args )
+//     {                            // activate():  To use, super call it to retrieve a container of GPU 
+//                                  // pointers associated with this object.  If none existed one will be created.  
+//                                  // Then do any WebGL calls you need that require GPU pointers.
+//       return this.gpu_instances.get( context ) || this.copy_onto_graphics_card( context, ...args )
+//     }
+// }
 
+// window.Vertex_Buffer = window.tiny_graphics.Vertex_Buffer =
+// class Vertex_Buffer extends Graphics_Card_Object
+// {                       // **Vertex_Buffer** organizes data related to one 3D shape and copies it into GPU memory.  That data
+//                         // is broken down per vertex in the shape.  To use, make a subclass of it that overrides the 
+//                         // constructor and fills in the "arrays" property.  Within "arrays", you can make several fields that 
+//                         // you can look up in a vertex; for each field, a whole array will be made here of that data type and 
+//                         // it will be indexed per vertex.  Along with those lists is an additional array "indices" describing
+//                         // how vertices are connected to each other into shape primitives.  Primitives could includes
+//                         // triangles, expressed as triples of vertex indices.
+//   constructor( ...array_names )
+//     {                             // This superclass constructor expects a list of names of arrays that you plan for.
+//       super();
+//       [ this.arrays, this.indices ] = [ {}, [] ];
+//                                   // Initialize a blank array member of the Shape with each of the names provided:
+//       for( let name of array_names ) this.arrays[ name ] = [];
+//     }
+//   copy_onto_graphics_card( context, selection_of_arrays = Object.keys( this.arrays ), write_to_indices = true )
+//     {           // copy_onto_graphics_card():  Called automatically as needed to load this vertex array set onto 
+//                 // one of your GPU contexts for its first time.  Send the completed vertex and index lists to 
+//                 // their own buffers within any of your existing graphics card contexts.  Optional arguments 
+//                 // allow calling this again to overwrite the GPU buffers related to this shape's arrays, or 
+//                 // subsets of them as needed (if only some fields of your shape have changed).
+
+//                 // Define what this object should store in each new WebGL Context:
+//       const initial_gpu_representation = { webGL_buffer_pointers: {} };
+//                                 // Our object might need to register to multiple GPU contexts in the case of 
+//                                 // multiple drawing areas.  If this is a new GPU context for this object, 
+//                                 // copy the object to the GPU.  Otherwise, this object already has been 
+//                                 // copied over, so get a pointer to the existing instance.
+//       const did_exist = this.gpu_instances.get( context );
+//       const gpu_instance = super.copy_onto_graphics_card( context, initial_gpu_representation );
+
+//       const gl = context;
+
+//       const write = did_exist ? ( target, data ) => gl.bufferSubData( target, 0, data )
+//                               : ( target, data ) => gl.bufferData( target, data, gl.STATIC_DRAW );
+
+//       for( let name of selection_of_arrays )
+//         { if( !did_exist )
+//             gpu_instance.webGL_buffer_pointers[ name ] = gl.createBuffer();
+//           gl.bindBuffer( gl.ARRAY_BUFFER, gpu_instance.webGL_buffer_pointers[ name ] );
+//           write( gl.ARRAY_BUFFER, Matrix.flatten_2D_to_1D( this.arrays[ name ] ) );
+//         }
+//       if( this.indices.length && write_to_indices )
+//         { if( !did_exist )
+//             gpu_instance.index_buffer = gl.createBuffer();
+//           gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, gpu_instance.index_buffer );
+//           write( gl.ELEMENT_ARRAY_BUFFER, new Uint32Array( this.indices ) );
+//         }
+//       return gpu_instance;
+//     }
+//   execute_shaders( gl, gpu_instance, type )     // execute_shaders(): Draws this shape's entire vertex buffer.
+//     {       // Draw shapes using indices if they exist.  Otherwise, assume the vertices are arranged as triples.
+//       if( this.indices.length )
+//       { gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, gpu_instance.index_buffer );
+//         gl.drawElements( gl[type], this.indices.length, gl.UNSIGNED_INT, 0 ) 
+//       }
+//       else  gl.drawArrays( gl[type], 0, Object.values( this.arrays )[0].length );
+//     }
+//   draw( webgl_manager, program_state, model_transform, material, type = "TRIANGLES" )
+//     {                                       // draw():  To appear onscreen, a shape of any variety goes through this function,
+//                                             // which executes the shader programs.  The shaders draw the right shape due to
+//                                             // pre-selecting the correct buffer region in the GPU that holds that shape's data.
+//       const gpu_instance = this.activate( webgl_manager.context );
+//       material.shader.activate( webgl_manager.context, gpu_instance.webGL_buffer_pointers, program_state, model_transform, material );
+//                                                               // Run the shaders to draw every triangle now:
+//       this.execute_shaders( webgl_manager.context, gpu_instance, type );
+//     }
+// }
+// end added
+// // start removed
 window.Vertex_Buffer = window.tiny_graphics.Vertex_Buffer =
 class Vertex_Buffer           // To use Vertex_Buffer, make a subclass of it that overrides the constructor and fills in the right fields.  
 {                             // Vertex_Buffer organizes data related to one 3D shape and copies it into GPU memory.  That data is broken
@@ -306,7 +421,7 @@ class Vertex_Buffer           // To use Vertex_Buffer, make a subclass of it tha
     }                                                                  
 }
 
-
+// end removed
 window.Shape = window.tiny_graphics.Shape =
 class Shape extends Vertex_Buffer
 {           // This class is used the same way as Vertex_Buffer, by subclassing it and writing a constructor that fills in certain fields.
