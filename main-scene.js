@@ -16,15 +16,10 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                'model': new Shape_From_File("assets/newspaper.obj")
+                'model': new Shape_From_File("assets/fish.obj"), //obj data than is printed rendering wont work
+                'tree': new Tree(),
+                'fish': new Fish()
             };
-            const models = {
-                'model': new Shape_From_File("assets/newspaper.obj")
-            }
-//             this.stars = new Material(new defs.Textured_Phong(1), {
-//                     color: color(0, 0, 0, 1),
-//                     ambient: 1, diffusivity: 1, specularity: 0.1, texture: new Texture("assets/arizona.png")
-//                 });
 
             this.materials = {
                 grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
@@ -59,7 +54,7 @@ window.Xplore = window.classes.Xplore =
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
             this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
-            this.materials.stars = this.stars.override({texture: context.get_instance('assets/arizona.png')})
+            this.materials.stars = this.stars.override({texture: context.get_instance('assets/newspaper.png')})
 
             this.lights = [new Light(Vec.of(0, 5, 5, 1), Color.of(1, .4, 1, 1), 100000)];
 
@@ -121,11 +116,12 @@ window.Xplore = window.classes.Xplore =
                 this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
             }
         }
-
+        //textures not working for fish, based on obj file
         drawModels () {
-            let modelt = Mat4.identity().times(Mat4.scale([25,25,25]));
-            this.shapes.model.draw(this.globals.graphics_state, modelt, this.materials.bark);
-//             this.shapes.model.draw(this.context, this.globals.graphics_state, modelt, this.stars);
+            let modelt = Mat4.identity().times(Mat4.translation([25,25,25])).times(Mat4.scale([25,25,25]));
+//             this.shapes.fish.draw(this.globals.graphics_state, modelt, this.materials.green1);
+            this.shapes.tree.draw(this.globals.graphics_state, modelt, this.grass_texture);
+           
         }
 
         display(graphics_state) {
