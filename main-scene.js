@@ -26,7 +26,8 @@ window.Xplore = window.classes.Xplore =
             };
 
             this.materials = {
-                white: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {ambient: 1,}),
+                white: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {ambient: 1,}),
+                black: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1)),
                 bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
@@ -59,9 +60,11 @@ window.Xplore = window.classes.Xplore =
             this.snow_bg = this.materials.white.override({texture: context.get_instance('assets/snow_bg.png')})
             this.snow_leaves = this.materials.white.override({texture: context.get_instance('assets/snow_leaves.jpg')})
             this.bark_texture = this.materials.white.override({texture: context.get_instance('assets/bark.jpg')})
+            this.leather_texture = this.materials.white.override({texture: context.get_instance('assets/leather.jpg')})
+            this.cloudy_texture = this.materials.white.override({texture: context.get_instance('assets/cloudy.jpg')})
 
 
-            this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
+            this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, 1, 1, 1), 100000)];
 
 
             this.randomX =  [...Array(100)].map(() => Math.floor(300*Math.random() + -150));
@@ -198,7 +201,7 @@ window.Xplore = window.classes.Xplore =
             this.drawForest();
             this.drawGround(0, 50, -200, 400, this.sky_texture)
 
-            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
+            this.drawBorder(0, -10, -200, 400, 100, this.mountains_texture)
 
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
@@ -248,11 +251,61 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawSnowman(x, z, size, hat){
+            let gs = this.globals.graphics_state;
+            let model_transform = Mat4.translation([x, size, z]);
+            model_transform = model_transform.times(Mat4.scale([size, size, size]));
+
+            //body
+            this.shapes.sphere.draw(gs, model_transform, this.snow_texture)
+            model_transform = model_transform.times(Mat4.translation([0, 1.6, 0]))
+            this.shapes.sphere.draw(gs, model_transform, this.snow_texture)
+            model_transform = model_transform.times(Mat4.translation([0, 1.6, 0]))
+            this.shapes.sphere.draw(gs, model_transform, this.snow_texture)
+
+            //eyes
+            model_transform = model_transform.times(Mat4.scale([.1, .1, .1]));
+            model_transform = model_transform.times(Mat4.translation([3, 0, 10]))
+            this.shapes.sphere.draw(gs, model_transform, this.materials.black)
+            model_transform = model_transform.times(Mat4.translation([-6, 0, 0]))
+            this.shapes.sphere.draw(gs, model_transform, this.materials.black)
+
+            //nose
+            model_transform = model_transform.times(Mat4.translation([3, -3, -1]))
+            model_transform = model_transform.times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)))
+            model_transform = model_transform.times(Mat4.scale([1, 6, 1]))
+            this.shapes.pyramid.draw(gs, model_transform, this.materials.fire2)
+
+            //hat
+            if (hat == true){
+                model_transform = Mat4.translation([x,size,z]).times(Mat4.scale([size,size,size]))
+                model_transform = model_transform.times(Mat4.translation([0,4,0]))
+
+                model_transform = model_transform.times(Mat4.scale([1.5, .1, 1.5]))
+                this.shapes.box.draw(gs, model_transform, this.leather_texture)
+                model_transform = model_transform.times(Mat4.scale([.6, 15, .6]))
+                this.shapes.box.draw(gs, model_transform, this.leather_texture)
+            }
+        }
+
         drawLevelTwo(){
-            this.drawGround(0, 0, -250, 500, this.snow_texture);
+            this.drawGround(0, 0, -200, 400, this.snow_texture);
             this.drawSnow(7, 10, 6);
-            this.drawBorder(0, -250, -250, 500, 500, this.snow_bg)
-            this.drawSnowyTree(0, -20, 10)
+            this.drawBorder(0, -250, -200, 400, 500, this.snow_bg)
+            this.drawGround(0, 200, -200, 400, this.cloudy_texture)
+            var j;
+            for (j = 0; j < 50; j++) {
+                this.drawSnowyTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
+                if (j%2) {
+                    this.drawSnowman(this.randomX[100-j], this.randomZ[100-j], 2, false)
+                }
+            }
+            this.drawSnowman(100, -300, 3, true)
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+            if (cam_x > 97 && cam_x < 103 && cam_z < -297 && cam_z > -303){
+                this.current_level = 3;
+            }
         }
 
 
@@ -296,11 +349,10 @@ window.Xplore = window.classes.Xplore =
             switch(this.current_level){
                 case 1:
                     this.drawLevelOne();
-                    this.checkCollision(x, z)
                     break;
                 case 2: this.drawLevelTwo(); break;
 
-                default: this.drawLevelOne();
+                default: this.drawLevelOne(); break;
 
 
             }
