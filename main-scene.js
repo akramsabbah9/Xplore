@@ -44,6 +44,7 @@ window.Xplore = window.classes.Xplore =
 
                 // lava scene
                 glass:    context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 0.7)),
+                lav: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1)),
                 lava:     context.get_instance(Texture_Scroll_X).material(Color.of(0, 0, 0, 1), 
                                                     {ambient: 1, texture: context.get_instance("assets/lava.jpg", false)} ),
             };
@@ -152,9 +153,10 @@ window.Xplore = window.classes.Xplore =
             }
         }*/
 
-        drawShape(shape, x, y, z, size, height, texture) {
+        drawShape(shape, x, y, z, size, roty, texture) {
             const trans = Mat4.identity().times(Mat4.translation([x,y,z]))
-                                         .times(Mat4.scale([size, height, size]));
+                                         .times(Mat4.scale([size, size, size]))
+                                         .times(Mat4.rotation(roty, Vec.of(0,1,0)));
             shape.draw(this.globals.graphics_state, trans, texture);
         }
 
@@ -163,13 +165,12 @@ window.Xplore = window.classes.Xplore =
         }
 
         drawStage() {
-            //this.drawShape(this.shapes.box, 0, -101, 0, 400, 100, this.materials.lava);
-            //this.shapes.box.draw(this.globals.graphics_state, Mat4.identity(), this.materials.lava);
+            this.drawShape(this.shapes.ground, 0, -1, 0, 400, Math.PI/2, this.materials.lava);
             const sky_trans = Mat4.identity().times(Mat4.translation([0,-300,0]))
                                              .times(Mat4.scale([600, 600, 600]))
                                              .times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)));
-            this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.materials.lava);
-            this.drawShape(this.shapes.ground, 0, 0, 0, 400, 400, this.materials.glass);
+            this.drawShape(this.shapes.ground, 0, 0, 0, 400, 0, this.materials.glass);
+            this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.nebula);
         }
 
         mouse_position(event, canvas) {
@@ -209,7 +210,6 @@ window.Xplore = window.classes.Xplore =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
             this.drawLavaLevel();
-            this.shapes.box.draw(graphics_state, Mat4.identity(), this.nebula);
 
             this.ctrans = this.move();
             graphics_state.camera_transform = Mat4.inverse(this.ctrans);
