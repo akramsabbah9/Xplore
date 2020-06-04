@@ -33,6 +33,21 @@ window.Xplore = window.classes.Xplore =
                     ambient: 1,
                     diffusivity: .3
                 }),
+                sand: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
+                    ambient: 1,
+                    diffusivity: .3,
+                    texture: context.get_instance("assets/sand.jpg")
+                }),
+                waterSurface: context.get_instance(Phong_Shader).material(Color.of(0,1,1, 1), {
+                    ambient: 0.6,
+                    diffusivity: .3,
+                    texture: context.get_instance("assets/waterSurface.jpg")
+                }),
+                waterBorder: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
+                    ambient: 1,
+                    diffusivity: .3,
+                    texture: context.get_instance("assets/waterBorder.jpg")
+                }),
                 bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
@@ -61,6 +76,7 @@ window.Xplore = window.classes.Xplore =
             this.white = context.get_instance(Basic_Shader).material();
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
+//             this.grass_texture = this.materials.sand.override({texture: context.get_instance("assets/sand.jpg")});
             this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
 
             this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')})
@@ -211,6 +227,25 @@ window.Xplore = window.classes.Xplore =
                 this.current_level = 2;
             }
         }
+        drawLevelFive(){
+            this.drawGround(0, 0, -200, 400, this.materials.sand);
+            this.drawForest();
+            this.drawGround(0, 90, -200, 400, this.materials.waterSurface)
+
+            this.drawBorder(0, -10, -200, 400, 100, this.materials.waterBorder)
+            
+            this.shapes.box.draw(this.globals.graphics_state, Mat4.identity().times(Mat4.translation([1,0,-10])), this.materials.bark)
+
+        
+
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+
+            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
+                this.current_level = 2;
+            }
+
+        }
 
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
@@ -249,9 +284,10 @@ window.Xplore = window.classes.Xplore =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
 
-            switch(this.current_level){
+            switch(5){
                 case 1: this.drawLevelOne(); break;
                 case 2: break;
+                case 5: this.drawLevelFive(); break;
 
                 default: this.drawLevelOne();
 

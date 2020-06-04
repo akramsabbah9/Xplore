@@ -39,10 +39,10 @@ window.Border = window.classes.Border =
             super("positions", "normals", "texture_coords");                                   // Name the values we'll define per each vertex.
 
             this.positions.push(...Vec.cast(
-                [-1 / 2, 0, 1 / 2], [1 / 2, 0, 1 / 2], [-1 / 2, 1, 1 / 2], [1 / 2, 1, 1 / 2], //front
-                [1 / 2, 0, 1 / 2], [1 / 2, 0, -1 / 2], [1 / 2, 1, 1 / 2], [1 / 2, 1, -1 / 2], //right
                 [1 / 2, 0, -1 / 2], [-1 / 2, 0, -1 / 2], [1 / 2, 1, -1 / 2], [-1 / 2, 1, -1 / 2], //back
                 [-1 / 2, 0, -1 / 2], [-1 / 2, 0, 1 / 2], [-1 / 2, 1, -1 / 2], [-1 / 2, 1, 1 / 2], //left
+                [-1 / 2, 0, 1 / 2], [1 / 2, 0, 1 / 2], [-1 / 2, 1, 1 / 2], [1 / 2, 1, 1 / 2], //front
+                [1 / 2, 0, 1 / 2], [1 / 2, 0, -1 / 2], [1 / 2, 1, 1 / 2], [1 / 2, 1, -1 / 2], //right
             ));
 
             this.normals.push(...Vec.cast(
