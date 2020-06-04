@@ -2,7 +2,7 @@ window.Cube = window.classes.Cube =
     class Cube extends Shape {
         // Here's a complete, working example of a Shape subclass.  It is a blueprint for a cube.
         constructor() {
-            super("positions", "normals"); // Name the values we'll define per each vertex.  They'll have positions and normals.
+            super("positions", "normals", "texture_coords"); // Name the values we'll define per each vertex.  They'll have positions and normals.
 
             // First, specify the vertex positions -- just a bunch of points that exist at the corners of an imaginary cube.
             this.positions.push(...Vec.cast(
@@ -22,6 +22,15 @@ window.Cube = window.classes.Cube =
                 [-1,0,0], [-1,0,0], [-1,0,0], [-1,0,0],
                 [0,1,0], [0,1,0], [0,1,0], [0,1,0],
                 [0,-1,0], [0,-1,0], [0,-1,0], [0,-1,0]
+            ));
+
+            this.texture_coords.push(...Vec.cast(
+                [0,0], [1,0], [0,1], [1,1],
+                [0,0], [1,0], [0,1], [1,1],
+                [0,0], [1,0], [0,1], [1,1],
+                [0,0], [1,0], [0,1], [1,1],
+                [0,0], [1,0], [0,1], [1,1],
+                [0,0], [1,0], [0,1], [1,1],
             ));
 
             // Those two lists, positions and normals, fully describe the "vertices".  What's the "i"th vertex?  Simply the combined
@@ -141,7 +150,7 @@ window.Pyramid = window.classes.Pyramid =
             ));
 
 
-            this.normals.push(...Vec.cast(
+            this.texture_coords.push(...Vec.cast(
                 [0,0], [1,0], [0,1], [1,1],
                 [0,0], [1/2,1/2], [1,0],
                 [0,0], [1/2,1/2], [1,0],

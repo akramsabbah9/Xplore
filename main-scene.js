@@ -22,6 +22,7 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
+                'sphere': new Subdivision_Sphere(4),
             };
 
             this.materials = {
@@ -53,8 +54,12 @@ window.Xplore = window.classes.Xplore =
 
             this.grass_texture = this.materials.white.override({texture: context.get_instance("assets/grass.jpg")});
             this.sky_texture = this.materials.white.override({texture: context.get_instance('assets/sky_texture.jpg')})
-            this.mountains = this.materials.white.override({texture: context.get_instance('assets/mountains.jpg')})
+            this.mountains_texture = this.materials.white.override({texture: context.get_instance('assets/mountains.jpg')})
             this.snow_texture = this.materials.white.override({texture: context.get_instance('assets/snow.jpg')})
+            this.snow_bg = this.materials.white.override({texture: context.get_instance('assets/snow_bg.png')})
+            this.snow_leaves = this.materials.white.override({texture: context.get_instance('assets/snow_leaves.jpg')})
+            this.bark_texture = this.materials.white.override({texture: context.get_instance('assets/bark.jpg')})
+
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
 
@@ -203,6 +208,27 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawSnowyTree(x, z, height) {
+            let loc = Mat4.identity().times(Mat4.translation([x,0,z]));
+
+            let trunk_transform = loc.times(Mat4.scale([1,height,1]));
+
+            let leaves_bottom_transform = loc.times(Mat4.translation([0,.8*height,0]))
+                .times(Mat4.scale([1.5*height,1*height,1.5*height]));
+
+            let leaves_middle_transform = loc.times(Mat4.translation([0,1.2*height,0]))
+                .times(Mat4.scale([1.3*height,1*height,1.3*height]));
+
+            let leaves_top_transform = loc.times(Mat4.translation([0,1.6*height,0]))
+                .times(Mat4.scale([1*height,1*height,1*height]));
+
+            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.bark_texture);
+            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.snow_leaves);
+            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.snow_leaves);
+            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.snow_leaves);
+
+        }
+
         drawSnow(height, size, speed){
             let t = (this.globals.graphics_state.animation_time / 1000) % (height/speed);
             let cam_x = this.ctrans[0][3];
@@ -227,8 +253,8 @@ window.Xplore = window.classes.Xplore =
 
             this.drawGround(0, 0, -250, 500, this.snow_texture);
             this.drawSnow(25, 5, 15);
-            this.shapes.pyramid.draw(this.globals.graphics_state, Mat4.identity().times(Mat4.translation([0,0,-300]).times(Mat4.scale([100,100,100]))), this.snow_texture)
-
+            this.drawBorder(0, -250, -250, 500, 500, this.snow_bg)
+            this.drawSnowyTree(0, -20, 10)
         }
 
 
