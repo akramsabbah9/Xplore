@@ -40,6 +40,9 @@ window.Xplore = window.classes.Xplore =
                 fire1:    context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), {ambient: 1, specularity:0}),
                 fire2:    context.get_instance( Phong_Shader ).material( Color.of( 1,0.5,0,1 ), {ambient: 1, specularity:0, diffusivity:0}),
                 fire3:    context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), {ambient: 1, specularity:0}),
+
+                // lava scene
+                glass:    context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 0.7)),
             };
 
 
@@ -218,6 +221,11 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawLavaLevel() {
+            this.drawGround(0, 0, -200, 400, this.materials.glass);
+            this.shapes.pyramid.draw(this.globals.graphics_state, Mat4.identity(), this.materials.green3);
+        }
+
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
             return Vec.of(event.clientX - (rect.left + rect.right) / 2,
@@ -254,10 +262,9 @@ window.Xplore = window.classes.Xplore =
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
-
             switch(this.current_level){
-                case 1: this.drawLevelOne(); break;
-                case 2: break;
+                case 1: this.drawLavaLevel(); break;
+                //case 2: this.drawLavaLevel(); break;
 
                 default: this.drawLevelOne();
 
