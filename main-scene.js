@@ -235,24 +235,22 @@ window.Xplore = window.classes.Xplore =
             let cam_z = this.ctrans[2][3];
 
             let snow_height = height - speed*t;
-            let fall_transform = Mat4.translation([cam_x - size, snow_height, cam_z + size]);
+            let fall_transform = Mat4.translation([cam_x - size/2, snow_height, cam_z + size/2]);
 
             var x,z;
             let trans_transform = fall_transform
             for (x = 0; x < size; x++){
-                trans_transform = fall_transform.times(Mat4.translation([2*x, 0, 0]))
+                trans_transform = fall_transform.times(Mat4.translation([x, 0, 0]))
                 for (z = 0; z > -size; z--){
-                    trans_transform = trans_transform.times(Mat4.translation([0, 0, -2]))
-                    this.shapes.ground.draw(this.globals.graphics_state, trans_transform, this.snow_texture)
+                    trans_transform = trans_transform.times(Mat4.translation([0, 0, -1]))
+                    this.shapes.box.draw(this.globals.graphics_state, trans_transform.times(Mat4.scale([.1,.1,.1])), this.snow_texture)
                 }
             }
         }
 
         drawLevelTwo(){
-
-
             this.drawGround(0, 0, -250, 500, this.snow_texture);
-            this.drawSnow(25, 5, 15);
+            this.drawSnow(7, 10, 6);
             this.drawBorder(0, -250, -250, 500, 500, this.snow_bg)
             this.drawSnowyTree(0, -20, 10)
         }
@@ -296,7 +294,10 @@ window.Xplore = window.classes.Xplore =
 
 
             switch(this.current_level){
-                case 1: this.drawLevelOne(); break;
+                case 1:
+                    this.drawLevelOne();
+                    this.checkCollision(x, z)
+                    break;
                 case 2: this.drawLevelTwo(); break;
 
                 default: this.drawLevelOne();
@@ -310,3 +311,5 @@ window.Xplore = window.classes.Xplore =
         }
 
     };
+
+
