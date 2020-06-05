@@ -153,7 +153,10 @@ window.Xplore = window.classes.Xplore =
                 if (!this.platforms[i].outside(this.ctrans)) fell = 0;
                 if (this.platforms[i].check_button(this.ctrans)) this.add_platform(this.platforms[i].next); 
             }
-            if (fell) this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0]));
+            if (fell) {
+                this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0])); 
+                this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
+            }
             if (this.lava_stage == 2) this.lava_end();
         }
 
@@ -171,6 +174,7 @@ window.Xplore = window.classes.Xplore =
             /*this.ctrans = Mat4.inverse(Mat4.rotation(Math.PI/2, Vec.of(1, 0, 0))
                                 .times(Mat4.translation([0, -900, 0])));             // reset camera*/
             this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0]));
+            this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
             this.platformlist = [[0, 0, 200, 200, true, 70, -70, 1],
                                  [0, -200, 50, 200, true, 20, -70, 2],
                                  [-75, -325, 200, 50, false, 0, 0, 3]];
