@@ -13,7 +13,7 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.current_level = 2;
+            this.current_level = 3;
 
             const shapes = {
                 'box': new Cube(),
@@ -303,7 +303,7 @@ window.Xplore = window.classes.Xplore =
 
         }
 
-        drawLevelTwo(){
+        drawLevelThree(){
             this.drawSnow(7, 10, 6);
             this.drawGround(0, 0, -200, 400, this.textures.snow);
             this.drawBorder(0, -250, -200, 400, 500, this.textures.snow_bg)
@@ -324,7 +324,7 @@ window.Xplore = window.classes.Xplore =
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
             if (cam_x > 97 && cam_x < 103 && cam_z < -297 && cam_z > -303){
-                this.current_level = 3;
+                this.current_level = 4;
             }
         }
 
@@ -369,7 +369,9 @@ window.Xplore = window.classes.Xplore =
                 case 1:
                     this.drawLevelOne();
                     break;
-                case 2: this.drawLevelTwo(); break;
+                case 2: break;
+                case 3: this.drawLevelThree(); break;
+
 
                 default: this.drawLevelOne(); break;
 
