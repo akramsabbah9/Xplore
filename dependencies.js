@@ -1,3 +1,4 @@
+
 window.Cube = window.classes.Cube =
     class Cube extends Shape {
         // Here's a complete, working example of a Shape subclass.  It is a blueprint for a cube.
@@ -39,8 +40,23 @@ window.Cube = window.classes.Cube =
             this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
                 14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
             // It stinks to manage arrays this big.  Later we'll show code that generates these same cube vertices more automatically.
+
+        } };
+       
+
+window.SandCube = window.classes.SandCube =
+class SandCube extends Shape    // A cube inserts six square strips into its arrays.
+{ constructor()  
+    { super( "positions", "normals", "texture_coords" );
+      for( var i = 0; i < 3; i++ )                    
+        for( var j = 0; j < 2; j++ )
+        { var square_transform = Mat4.rotation( i == 0 ? Math.PI/2 : 0, Vec.of(1, 0, 0) )
+                         .times( Mat4.rotation( Math.PI * j - ( i == 1 ? Math.PI/2 : 0 ), Vec.of( 0, 1, 0 ) ) )
+                         .times( Mat4.translation([ 0, 0, 1 ]) );
+          Square.insert_transformed_copy_into( this, [], square_transform );
         }
-    };
+    }
+};
 
 window.Border = window.classes.Border =
     class Border extends Shape {
