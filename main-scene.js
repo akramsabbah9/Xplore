@@ -33,10 +33,10 @@ window.Xplore = window.classes.Xplore =
                     ambient: 1,
                     diffusivity: .3
                 }),
-                sand: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
+                sand2: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
                     ambient: 1,
                     diffusivity: .3,
-                    texture: context.get_instance("assets/sand.jpg")
+                    texture: context.get_instance("assets/sand2.jpg")
                 }),
                 waterSurface: context.get_instance(Phong_Shader).material(Color.of(0,1,1, 1), {
                     ambient: 0.6,
@@ -228,7 +228,7 @@ window.Xplore = window.classes.Xplore =
             }
         }
         drawLevelFour(){
-            this.drawGround(0, 0, -200, 400, this.materials.sand);
+            this.drawGround(0, 0, -200, 400, this.materials.sand2);
             
             this.drawGround(0, 90, -200, 400, this.materials.waterSurface)
 
