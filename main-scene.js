@@ -43,11 +43,10 @@ window.Xplore = window.classes.Xplore =
                 fire2:    context.get_instance( Phong_Shader ).material( Color.of( 1,0.5,0,1 ), {ambient: 1, specularity:0, diffusivity:0}),
                 fire3:    context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), {ambient: 1, specularity:0}),
 
-                // lava scene
                 glass:    context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 0.7)),
-                lav: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1)),
                 lava:     context.get_instance(Texture_Scroll_X).material(Color.of(0, 0, 0, 1), 
                                                     {ambient: 1, texture: context.get_instance("assets/lava.jpg", false)} ),
+                mtn:      context.get_instance(Phong_Shader).material(Color.of(0.8, 0.5, 0.3, 1), {ambient: .1}),
             };
 
 
@@ -109,11 +108,11 @@ window.Xplore = window.classes.Xplore =
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
-            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.movz = -1, () => undefined, () => this.movz = 0 );
-            this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.movz = 1, () => undefined, () => this.movz = 0 );
+            this.key_triggered_button( "Move Forward",  [ "w" ], () => this.movz = -1, () => undefined, () => this.movz = 0 );
+            this.key_triggered_button( "Move Backward",  [ "s" ], () => this.movz = 1, () => undefined, () => this.movz = 0 );
             this.new_line();
-            this.key_triggered_button( "Move Left",  [ "ArrowLeft" ], () => this.movx = -1, () => undefined, () => this.movx = 0 );
-            this.key_triggered_button( "Move Right",  [ "ArrowRight" ], () => this.movx = 1, () => undefined, () => this.movx = 0 );
+            this.key_triggered_button( "Move Left",  [ "a" ], () => this.movx = -1, () => undefined, () => this.movx = 0 );
+            this.key_triggered_button( "Move Right",  [ "d" ], () => this.movx = 1, () => undefined, () => this.movx = 0 );
             this.new_line();
             this.key_triggered_button( "Look Upwards",  [ "i" ], () => this.rotv = 1, () => undefined, () => this.rotv = 0 );
             this.key_triggered_button( "Look Downwards",  [ "k" ], () => this.rotv = -1, () => undefined, () => this.rotv = 0 );
@@ -157,30 +156,38 @@ window.Xplore = window.classes.Xplore =
                 this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0])); 
                 this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
             }
-            if (this.lava_stage == 2) this.lava_end();
+            if (this.test_goal(70, 285, 20)) this.lava_end();
         }
 
         drawStage() {//FIX
             this.drawShape(this.shapes.ground, 0, -1, 0, 1200, Math.PI/2, this.materials.lava);
+            this.drawShape(this.shapes.pyramid, 300, 0, 300, 100, Math.PI/6, this.materials.mtn);
+            this.drawShape(this.shapes.pyramid, 90, 0, -170, 80, -Math.PI/3, this.materials.mtn);
+            this.drawShape(this.shapes.pyramid, 60, 0, -150, 30, -Math.PI/4, this.materials.mtn);
+            this.drawShape(this.shapes.sphere, 70, 10, 285, 20, 0, this.plastic);
             const sky_trans = Mat4.identity().times(Mat4.translation([0,-300,0]))
                                              .times(Mat4.scale([600, 600, 600]))
                                              .times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)));
-            //this.drawShape(this.shapes.ground, 0, 0, 0, 1200, 0, this.glass);
             this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.nebula);
         }
 
         lava_init() {
-            this.lights.push(new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)); // increase light
-            /*this.ctrans = Mat4.inverse(Mat4.rotation(Math.PI/2, Vec.of(1, 0, 0))
-                                .times(Mat4.translation([0, -900, 0])));             // reset camera*/
             this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0]));
-            this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
+            this.ud = this.rd = Mat4.identity();
             this.platformlist = [[0, 0, 200, 200, true, 70, -70, 1],
                                  [0, -200, 50, 200, true, 20, -70, 2],
-                                 [-75, -325, 200, 50, false, 0, 0, 3]];
+                                 [-75, -325, 200, 50, true, -75, -20, 3],
+                                 [-225, -325, 100, 50, true, 0, 0, 4],
+                                 [-155, -225, 40, 150, true, 16, -60, 5],
+                                 [-250, 0, 50, 600, true, 0, 0, 6],
+                                 [-75, 285, 300, 30, false, 0, 0, 7]];
 
             this.platforms = [new Platform(0, 0, 200, 200, new Button(true, 70, -70), 1)];        // add first platform and button
             this.lava_stage = 1;                                                                // turn off init flag
+        }
+
+        test_goal(x, z, diameter) {
+            return (Math.abs(x-this.ctrans[0][3]) <= diameter/2) && (Math.abs(z-this.ctrans[2][3]) <= diameter/2);
         }
 
         lava_end() {
