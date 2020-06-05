@@ -49,16 +49,13 @@ window.Xplore = window.classes.Xplore =
                     ambient: .4,
                     diffusivity: .4
                 }),
-                // sky: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
-                //     ambient: 1,
-                //     diffusivity: .3
-                // }),
+                coral: context.get_instance(Phong_Shader).material(Color.of(1,0.498,0.3137, 1), {ambient: 0.8}),
                 sand2: context.get_instance(Phong_Shader).material(Color.of(0,0,0, 1), {
                     ambient: 1,
                     diffusivity: .3,
                     texture: context.get_instance("assets/sand2.jpg")
                 }),
-                waterSurface: context.get_instance(Phong_Shader).material(Color.of(0,1,1, 1), {
+                waterSurface: context.get_instance(Texture_Scroll_X).material(Color.of(0,1,1, 1), {
                     ambient: 0.6,
                     diffusivity: .3,
                     texture: context.get_instance("assets/waterSurface.jpg")
@@ -93,7 +90,7 @@ window.Xplore = window.classes.Xplore =
                 lightpink: context.get_instance(Phong_Shader).material(Color.of(0.88, 0.47, 0.65, 1)),
                 snailblue: context.get_instance(Phong_Shader).material(Color.of(0.35, 0.39, 0.63, 1)),
                 shellpink: context.get_instance(Phong_Shader).material(Color.of(0.8627, 0.7294, 0.7098, 1)),
-                turtlegreen: context.get_instance(Phong_Shader).material(Color.of(0.16,0.20,0.04, 1)),
+                turtlegreen: context.get_instance(Phong_Shader).material(Color.of(0.16,0.20,0.04, 1),{ambient:0.8}),
                 sky: context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), { ambient: 1, diffusivity: .3 }),
                 glass:    context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 0.7)),
                 lava:     context.get_instance(Texture_Scroll_X).material(Color.of(0, 0, 0, 1), 
@@ -120,7 +117,7 @@ window.Xplore = window.classes.Xplore =
                 fire2: this.materials.white.override({texture: context.get_instance('assets/fire2.jpg')}),
                 bruins: this.materials.white.override({texture: context.get_instance('assets/bruins.jpg')}),
                 nebula: this.materials.sky.override({texture: context.get_instance('assets/night.jpg')}),
-                glass: this.materials.glass.override({texture: context.get_instance('assets/glass.jpg')})
+                glass: this.materials.glass.override({texture: context.get_instance('assets/glass.jpg')}),
             }
 
             // At the beginning of our program, load one of each of these shape
@@ -282,6 +279,7 @@ window.Xplore = window.classes.Xplore =
             var j;
             for (j = 0; j < 50; j++) {
                 this.drawTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
+                this.boundingBox(this.randomX[j]-6,this.randomX[j]+6,this.randomZ[j]-6,this.randomZ[j]+6);
             }
             
             this.drawFire(-100, 0, -280);
@@ -382,8 +380,7 @@ window.Xplore = window.classes.Xplore =
           this.shapes.pyramid.draw(this.globals.graphics_state, wingTipLeft3, this.materials.bird)          
         }
 
-        drawCactus(x,z) {
-            let height = 10;
+        drawCactus(x,height,z,texture) {
 
             let loc = Mat4.identity().times(Mat4.translation([x,height/2,z]));
 
@@ -408,13 +405,13 @@ window.Xplore = window.classes.Xplore =
                           .times(Mat4.translation([3,1.5,0]))  
                           .times(Mat4.scale([0.5,4,0.5])); 
 
-            this.shapes.pyr1.draw(this.globals.graphics_state, stem, this.materials.green3);
-            this.shapes.pyr1.draw(this.globals.graphics_state, fork1, this.materials.green3);
-            this.shapes.pyr1.draw(this.globals.graphics_state, end1, this.materials.green3);
-            this.shapes.pyr1.draw(this.globals.graphics_state, fork2, this.materials.green3);
-            this.shapes.pyr1.draw(this.globals.graphics_state, end2, this.materials.green3);
-            this.shapes.pyr1.draw(this.globals.graphics_state, fork3, this.materials.green3);
-            this.shapes.pyr1.draw(this.globals.graphics_state, end3, this.materials.green3);            
+            this.shapes.pyr1.draw(this.globals.graphics_state, stem, texture);
+            this.shapes.pyr1.draw(this.globals.graphics_state, fork1, texture);
+            this.shapes.pyr1.draw(this.globals.graphics_state, end1, texture);
+            this.shapes.pyr1.draw(this.globals.graphics_state, fork2, texture);
+            this.shapes.pyr1.draw(this.globals.graphics_state, end2, texture);
+            this.shapes.pyr1.draw(this.globals.graphics_state, fork3, texture);
+            this.shapes.pyr1.draw(this.globals.graphics_state, end3, texture);            
         }
 
 
@@ -443,39 +440,59 @@ window.Xplore = window.classes.Xplore =
         
         drawSnails(){
                 const t = this.globals.graphics_state.animation_time/1000, dt = this.globals.graphics_state.animation_delta_time / 1000;
-                let transform = Mat4.identity().times(Mat4.translation([0,3,-200])).times(Mat4.scale([3,3,3]));
-                transform= transform.times(Mat4.translation([-50,0,0])).times(Mat4.rotation(t/15, Vec.of(0,1,0))).times(Mat4.translation([50,0,0]))
-                this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.snailpink);
-                transform = Mat4.identity().times(Mat4.translation([0,3,-220])).times(Mat4.scale([3,3,3]));
-                this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.lightpink);
-                transform = Mat4.identity().times(Mat4.translation([0,3,-180])).times(Mat4.scale([3,3,3]));
-                this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.snailblue);
+//                 let transform = Mat4.identity().times(Mat4.translation([0,3,-200])).times(Mat4.scale([3,3,3]));
+//                 transform= transform.times(Mat4.translation([-50,0,0])).times(Mat4.rotation(t/15, Vec.of(0,1,0))).times(Mat4.translation([50,0,0]))
+//                 this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.snailpink);
+//                 transform = Mat4.identity().times(Mat4.translation([0,3,-220])).times(Mat4.scale([3,3,3]));
+//                 this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.lightpink);
+//                 transform = Mat4.identity().times(Mat4.translation([0,3,-180])).times(Mat4.scale([3,3,3]));
+//                 this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.snailblue);
                 
-                const numSnails = 20;
+                const numSnails = 10;
 //                 var trans = Mat4.identity()
                 for(var i = 0; i < numSnails; i++){
-                    Mat4.identity().times(Mat4.translation([40*i-200, 3*(i%7), -5*(i+1)*t%400])).times(Mat4.scale([3*i%7,3*i%7,3*i%7]));
+//                     Mat4.identity().times(Mat4.translation([40*i-200, 3*(i%7), -5*(i+1)*t%400])).times(Mat4.scale([3*i%7,3*i%7,3*i%7]));
                     this.shapes.snail.draw(this.globals.graphics_state, Mat4.identity().times(Mat4.translation([40*i-200, 3*(i%7), -5*(i+1)*t%400])).times(Mat4.scale([3*i%7,3*i%7,3*i%7])), i % 3 == 0 ? this.materials.lightpink : (i % 3 == 2 ? this.materials.snailblue: this.materials.snailpink));
                 }
 
         }
+        drawShell(x,y,z){
+                let modelt = Mat4.identity().times(Mat4.translation([x,y,z])).times(Mat4.scale([50,50,50]));
+                this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.shellpink);
+        }
         drawShells(){
-            let modelt = Mat4.identity().times(Mat4.translation([-100,1,-280])).times(Mat4.scale([50,50,50]));
-               
-            this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.shellpink);
-            modelt = Mat4.identity().times(Mat4.translation([10,1,-200])).times(Mat4.scale([50,50,50]))
-            this.shapes.dollar.draw(this.globals.graphics_state, modelt, this.materials.sandDollar);
+//                 const t = this.globals.graphics_state.animation_time/100, dt = this.globals.graphics_state.animation_delta_time / 1000;
+//             let modelt = Mat4.identity().times(Mat4.translation([-100,1,-280])).times(Mat4.scale([50,50,50]));
+            
+//             this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.shellpink);
+            this.drawShell(-100,1,-280);
+            this.drawShell(-180,1,-110);
+            this.drawShell(-20,1,-50);
+            this.drawShell(100,1,-340);
+            this.drawShell(30,1,-190);
+            this.drawShell(10,1,-230);
+            this.drawShell(-130,1,-370);
+//             modelt = Mat4.identity().times(Mat4.translation([10,1,-200])).times(Mat4.scale([50,50,50])).times(Mat4.rotation(-Math.PI/4, Vec.of(1,0,0)));
+//             this.shapes.dollar.draw(this.globals.graphics_state, modelt, this.materials.sandDollar);
         }
         drawTurtles() {
             const t = this.globals.graphics_state.animation_time/100, dt = this.globals.graphics_state.animation_delta_time / 1000;
-            let modelt = Mat4.identity().times(Mat4.translation([0,25,-400 + 5*t%400])).times(Mat4.scale([0.5,0.5,0.5])).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0)));
+//             .times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0)))
+            var turtlespeed = 200 - 2*t%400;
+            var smallturtlespeed = 210 - 2*t%400;
+            let modelt = Mat4.identity().times(Mat4.translation([turtlespeed,45,-100])).times(Mat4.rotation(t/8,Vec.of(1,0,0))).times(Mat4.scale([0.25,0.25,0.25]));
+            let smallModelT = Mat4.identity().times(Mat4.translation([smallturtlespeed,55,-90])).times(Mat4.rotation((t+2)/8,Vec.of(1,0,0))).times(Mat4.scale([0.1,0.1,0.1]));
+            let smallModelT2 = Mat4.identity().times(Mat4.translation([smallturtlespeed,35,-110])).times(Mat4.rotation((t+3)/8,Vec.of(1,0,0))).times(Mat4.scale([0.1,0.1,0.1]));
 //             modelt= modelt.times(Mat4.translation([-50,0,0])).times(Mat4.rotation(t/2, Vec.of(0,1,0))).times(Mat4.translation([50,0,0]))
             
 //             this.shapes.fish.draw(this.globals.graphics_state, modelt, this.materials.green1);
 //             this.shapes.tree.draw(this.globals.graphics_state, modelt, this.grass_texture);
             this.shapes.turtle.draw(this.globals.graphics_state, modelt, this.materials.turtlegreen);
+            this.shapes.turtle.draw(this.globals.graphics_state, smallModelT, this.materials.turtlegreen);
+            this.shapes.turtle.draw(this.globals.graphics_state, smallModelT2, this.materials.turtlegreen);
+
         }
-        drawWhales() {
+        drawWhale() {
             const t = this.globals.graphics_state.animation_time/100, dt = this.globals.graphics_state.animation_delta_time / 1000;
             if (this.whaleFlag){
                     this.whaleRot += dt/8;
@@ -486,13 +503,14 @@ window.Xplore = window.classes.Xplore =
                     this.whaleFlag = !this.whaleFlag
                     this.whaleRot = this.whaleFlag ? -Math.PI/2 : Math.PI/2;
             }
-            let modelt = Mat4.identity().times(Mat4.translation([0,50,-400 + t%400])).times(Mat4.rotation(this.whaleRot,Vec.of(0,0,1))).times(Mat4.scale([5,5,5]));
+            var whalespeed = -250+t%500
+            let modelt = Mat4.identity().times(Mat4.translation([whalespeed,50,-300])).times(Mat4.rotation(this.whaleRot,Vec.of(1,0,0))).times(Mat4.scale([5,5,5])).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0)));
             this.shapes.whale.draw(this.globals.graphics_state, modelt, this.materials.grey);
         }
          drawModels () {
             
            this.drawTurtles();
-           this.drawWhales();
+           this.drawWhale();
 //             this.shapes.snail.draw(this.globals.graphics_state, modelt, this.materials.green1);
             this.drawSnails();
             this.drawShells();
@@ -511,10 +529,14 @@ window.Xplore = window.classes.Xplore =
             
             this.drawModels()
 
+            this.drawCactus(0,5,-200, this.materials.coral)
+            this.drawCactus(0,5,-205, this.materials.coral)
+            this.drawCactus(0,5,-210, this.materials.coral)
+
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
 
-            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
+            if (cam_x < -128 && cam_x > -132 && cam_z < -368 && cam_z > -372){
                 this.current_level = 5;
             }
 
@@ -706,6 +728,7 @@ window.Xplore = window.classes.Xplore =
             var j;
             for (j = 0; j < 50; j++) {
                 this.drawSnowyTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
+                this.boundingBox(this.randomX[j]-6,this.randomX[j]+6,this.randomZ[j]-6,this.randomZ[j]+6);
                 if (j%2) {
                     this.drawSnowman(this.randomX[100-j], this.randomZ[100-j], 2, false)
                 }
@@ -729,14 +752,22 @@ window.Xplore = window.classes.Xplore =
 
             this.drawVulture();
 
-            this.drawCactus(-40,-50)
-            this.drawCactus(110,-80)
-            this.drawCactus(-80,-150)
-            this.drawCactus(20,-30) 
-            this.drawCactus(-40,-300)
-            this.drawCactus(150,-280)
-            this.drawCactus(-160,-250)
-            this.drawCactus(20,-330) 
+            this.drawCactus(-40,10,-50,this.materials.green)
+            this.boundingBox(-46,-34,-56,-44);
+            this.drawCactus(110,10,-80,this.materials.green)
+            this.boundingBox(104,116,-86,-74);
+            this.drawCactus(-80,-150,this.materials.green)
+            this.boundingBox(-86,10,-74,-156,-144);
+            this.drawCactus(20,10,-30,this.materials.green) 
+            this.boundingBox(14,26,-36,-24);
+            this.drawCactus(-40,10,-300,this.materials.green)
+            this.boundingBox(-34,-46,-306,-294);
+            this.drawCactus(150,10,-280,this.materials.green)
+            this.boundingBox(144,156,-286,-274);
+            this.drawCactus(-160,10,-250,this.materials.green)
+            this.boundingBox(-166,-154,-256,-244);
+            this.drawCactus(20,10,-330,this.materials.green) 
+            this.boundingBox(14,26,-336,-224);
             
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
@@ -816,13 +847,13 @@ window.Xplore = window.classes.Xplore =
             if ( cam_x < this.minDomain[0]) {
                 this.ctrans[0][3] = this.ctrans[0][3]+1;
             } 
-            else if (cam_x > this.maxDomain[0]) {
+            if (cam_x > this.maxDomain[0]) {
                this.ctrans[0][3] = this.ctrans[0][3]-1;
             }
-            else if ( cam_z < this.minDomain[1]) {
+            if ( cam_z < this.minDomain[1]) {
                 this.ctrans[2][3] = this.ctrans[2][3]+1;
             } 
-            else if ( cam_z > this.maxDomain[1]) {
+            if ( cam_z > this.maxDomain[1]) {
                 this.ctrans[2][3] = this.ctrans[2][3]-1;
             }
         }
