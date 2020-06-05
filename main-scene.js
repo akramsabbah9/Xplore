@@ -752,21 +752,21 @@ window.Xplore = window.classes.Xplore =
 
             this.drawVulture();
 
-            this.drawCactus(-40,10,-50,this.materials.green)
+            this.drawCactus(-40,10,-50,this.materials.green3)
             this.boundingBox(-46,-34,-56,-44);
-            this.drawCactus(110,10,-80,this.materials.green)
+            this.drawCactus(110,10,-80,this.materials.green3)
             this.boundingBox(104,116,-86,-74);
-            this.drawCactus(-80,-150,this.materials.green)
-            this.boundingBox(-86,10,-74,-156,-144);
-            this.drawCactus(20,10,-30,this.materials.green) 
+            this.drawCactus(-80,10,-150,this.materials.green3)
+            this.boundingBox(-86,-74,-156,-144);
+            this.drawCactus(20,10,-30,this.materials.green3) 
             this.boundingBox(14,26,-36,-24);
-            this.drawCactus(-40,10,-300,this.materials.green)
+            this.drawCactus(-40,10,-300,this.materials.green3)
             this.boundingBox(-34,-46,-306,-294);
-            this.drawCactus(150,10,-280,this.materials.green)
+            this.drawCactus(150,10,-280,this.materials.green3)
             this.boundingBox(144,156,-286,-274);
-            this.drawCactus(-160,10,-250,this.materials.green)
+            this.drawCactus(-160,10,-250,this.materials.green3)
             this.boundingBox(-166,-154,-256,-244);
-            this.drawCactus(20,10,-330,this.materials.green) 
+            this.drawCactus(20,10,-330,this.materials.green3) 
             this.boundingBox(14,26,-336,-224);
             
             let cam_x = this.ctrans[0][3]
