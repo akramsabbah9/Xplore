@@ -13,7 +13,7 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.current_level = 6;
+            this.current_level = 1;
             this.minDomain = [-195,-395];
             this.maxDomain = [195,-5];
 
@@ -389,6 +389,7 @@ window.Xplore = window.classes.Xplore =
             let cam_z = this.ctrans[2][3]
 
             if (cam_x < -97 && cam_x > -103 && cam_z < -277 && cam_z > -283){
+                this.reset_camera(0, -5, 3);
                 this.current_level = 2;
             }
         }
@@ -504,6 +505,7 @@ window.Xplore = window.classes.Xplore =
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
             if (cam_x > 97 && cam_x < 103 && cam_z < -297 && cam_z > -303){
+                this.reset_camera(0, -5, 3)
                 this.current_level = 4;
             }
         }
@@ -511,8 +513,6 @@ window.Xplore = window.classes.Xplore =
 
         drawLevelTwo() {
             this.drawGround(0, 0, -200, 400, this.sand_texture);
-
-            
             this.drawGround(0, 50, -200, 400, this.sunHalo_texture)
 
             this.drawBorder(0, -40, -200, 400, 100, this.dune_texture)
@@ -533,6 +533,7 @@ window.Xplore = window.classes.Xplore =
             let cam_z = this.ctrans[2][3]
 
             if (cam_x < 2 && cam_x > -2 && cam_z < -198 && cam_z > -202){
+                this.reset_camera(0, -5, 3)
                 this.current_level = 3;
             }
         }
@@ -576,8 +577,8 @@ window.Xplore = window.classes.Xplore =
             return a;
         }
 
-        reset_camera(x, y, z) { // reset camera and place it at the given x,y,z coords
-            this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 3]));
+        reset_camera(x, y, z) {
+            this.ctrans = Mat4.inverse(Mat4.translation([x, y, z]));
             this.ud = this.rd = Mat4.identity();
         }
 
@@ -587,19 +588,14 @@ window.Xplore = window.classes.Xplore =
             
             switch(this.current_level){
 
-                case 1:
-                    this.drawLevelOne();
-                    break;
+                case 1: this.drawLevelOne(); break;
                 case 2: this.drawLevelTwo(); break;
                 case 3: this.drawLevelThree(); break;
                 case 4: break;
                 case 5: break;
                 case 6: this.drawBruinLevel(); break;
-
-
+                
                 default: this.drawLevelOne(); break;
-
-
             }
 
             let cam_x = this.ctrans[0][3]
@@ -619,9 +615,7 @@ window.Xplore = window.classes.Xplore =
             } 
             else if ( cam_z > this.maxDomain[1]) {
                 this.ctrans[2][3] = this.ctrans[2][3]-1;
-            } 
-
-
+            }
         }
 
     };
