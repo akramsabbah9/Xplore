@@ -34,8 +34,7 @@ window.Xplore = window.classes.Xplore =
                 'turtle': new Turtle(),
                 'whale': new Whale(),
                 'snail': new Snail(),
-                'fan': new FanShell(),
-                'dollar': new SandDollar()
+                'fan': new FanShell()
             };
 
             shapes.pyr1.texture_coords = shapes.pyr1.texture_coords.map(v => Vec.of(v[0] * 10, v[1] * 1));
@@ -440,18 +439,10 @@ window.Xplore = window.classes.Xplore =
         
         drawSnails(){
                 const t = this.globals.graphics_state.animation_time/1000, dt = this.globals.graphics_state.animation_delta_time / 1000;
-//                 let transform = Mat4.identity().times(Mat4.translation([0,3,-200])).times(Mat4.scale([3,3,3]));
-//                 transform= transform.times(Mat4.translation([-50,0,0])).times(Mat4.rotation(t/15, Vec.of(0,1,0))).times(Mat4.translation([50,0,0]))
-//                 this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.snailpink);
-//                 transform = Mat4.identity().times(Mat4.translation([0,3,-220])).times(Mat4.scale([3,3,3]));
-//                 this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.lightpink);
-//                 transform = Mat4.identity().times(Mat4.translation([0,3,-180])).times(Mat4.scale([3,3,3]));
-//                 this.shapes.snail.draw(this.globals.graphics_state, transform, this.materials.snailblue);
-                
+               
                 const numSnails = 10;
-//                 var trans = Mat4.identity()
+
                 for(var i = 0; i < numSnails; i++){
-//                     Mat4.identity().times(Mat4.translation([40*i-200, 3*(i%7), -5*(i+1)*t%400])).times(Mat4.scale([3*i%7,3*i%7,3*i%7]));
                     this.shapes.snail.draw(this.globals.graphics_state, Mat4.identity().times(Mat4.translation([40*i-200, 3*(i%7), -5*(i+1)*t%400])).times(Mat4.scale([3*i%7,3*i%7,3*i%7])), i % 3 == 0 ? this.materials.lightpink : (i % 3 == 2 ? this.materials.snailblue: this.materials.snailpink));
                 }
 
@@ -460,11 +451,8 @@ window.Xplore = window.classes.Xplore =
                 let modelt = Mat4.identity().times(Mat4.translation([x,y,z])).times(Mat4.scale([50,50,50]));
                 this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.shellpink);
         }
+        
         drawShells(){
-//                 const t = this.globals.graphics_state.animation_time/100, dt = this.globals.graphics_state.animation_delta_time / 1000;
-//             let modelt = Mat4.identity().times(Mat4.translation([-100,1,-280])).times(Mat4.scale([50,50,50]));
-            
-//             this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.shellpink);
             this.drawShell(-100,1,-280);
             this.drawShell(-180,1,-110);
             this.drawShell(-20,1,-50);
@@ -472,26 +460,23 @@ window.Xplore = window.classes.Xplore =
             this.drawShell(30,1,-190);
             this.drawShell(10,1,-230);
             this.drawShell(-130,1,-370);
-//             modelt = Mat4.identity().times(Mat4.translation([10,1,-200])).times(Mat4.scale([50,50,50])).times(Mat4.rotation(-Math.PI/4, Vec.of(1,0,0)));
-//             this.shapes.dollar.draw(this.globals.graphics_state, modelt, this.materials.sandDollar);
         }
+
         drawTurtles() {
             const t = this.globals.graphics_state.animation_time/100, dt = this.globals.graphics_state.animation_delta_time / 1000;
-//             .times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0)))
+
             var turtlespeed = 200 - 2*t%400;
             var smallturtlespeed = 210 - 2*t%400;
             let modelt = Mat4.identity().times(Mat4.translation([turtlespeed,45,-100])).times(Mat4.rotation(t/8,Vec.of(1,0,0))).times(Mat4.scale([0.25,0.25,0.25]));
             let smallModelT = Mat4.identity().times(Mat4.translation([smallturtlespeed,55,-90])).times(Mat4.rotation((t+2)/8,Vec.of(1,0,0))).times(Mat4.scale([0.1,0.1,0.1]));
             let smallModelT2 = Mat4.identity().times(Mat4.translation([smallturtlespeed,35,-110])).times(Mat4.rotation((t+3)/8,Vec.of(1,0,0))).times(Mat4.scale([0.1,0.1,0.1]));
-//             modelt= modelt.times(Mat4.translation([-50,0,0])).times(Mat4.rotation(t/2, Vec.of(0,1,0))).times(Mat4.translation([50,0,0]))
-            
-//             this.shapes.fish.draw(this.globals.graphics_state, modelt, this.materials.green1);
-//             this.shapes.tree.draw(this.globals.graphics_state, modelt, this.grass_texture);
+
             this.shapes.turtle.draw(this.globals.graphics_state, modelt, this.materials.turtlegreen);
             this.shapes.turtle.draw(this.globals.graphics_state, smallModelT, this.materials.turtlegreen);
             this.shapes.turtle.draw(this.globals.graphics_state, smallModelT2, this.materials.turtlegreen);
 
         }
+
         drawWhale() {
             const t = this.globals.graphics_state.animation_time/100, dt = this.globals.graphics_state.animation_delta_time / 1000;
             if (this.whaleFlag){
@@ -507,19 +492,25 @@ window.Xplore = window.classes.Xplore =
             let modelt = Mat4.identity().times(Mat4.translation([whalespeed,50,-300])).times(Mat4.rotation(this.whaleRot,Vec.of(1,0,0))).times(Mat4.scale([5,5,5])).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0)));
             this.shapes.whale.draw(this.globals.graphics_state, modelt, this.materials.grey);
         }
-         drawModels () {
+        drawCoral(x,z){
+            this.drawCactus(x,5,z-5, this.materials.coral)
+            this.drawCactus(x,5,z, this.materials.coral)
+            this.drawCactus(x,5,z+5, this.materials.coral)
+            this.drawCactus(x-5,5,z-5, this.materials.coral)
+            this.drawCactus(x-5,5,z, this.materials.coral)
+            this.drawCactus(x-5,5,z+5, this.materials.coral)
+            this.drawCactus(x+5,5,z-5, this.materials.coral)
+            this.drawCactus(x+5,5,z, this.materials.coral)
+            this.drawCactus(x+5,5,z+5, this.materials.coral)
+        }
+        drawModels () {
             
-           this.drawTurtles();
-           this.drawWhale();
-//             this.shapes.snail.draw(this.globals.graphics_state, modelt, this.materials.green1);
+            this.drawTurtles();
+            this.drawWhale();
             this.drawSnails();
             this.drawShells();
-//             this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.green1);
-//             modelt = Mat4.identity().times(Mat4.translation([10,3,-200])).times(Mat4.scale([50,50,50]))
-//             this.shapes.dollar.draw(this.globals.graphics_state, modelt, this.materials.white);
-           
         }
-
+        
         drawLevelFour(){
             this.drawGround(0, 0, -200, 400, this.materials.sand2);
             
@@ -529,9 +520,16 @@ window.Xplore = window.classes.Xplore =
             
             this.drawModels()
 
-            this.drawCactus(0,5,-200, this.materials.coral)
-            this.drawCactus(0,5,-205, this.materials.coral)
-            this.drawCactus(0,5,-210, this.materials.coral)
+            this.drawCoral(0,-205);
+            this.drawCoral(100,-305);
+            this.drawCoral(-150,-100);
+            this.drawCoral(190,-50);
+            this.drawCoral(-190,-300);
+            this.boundingBox(-11,11,-216,-194);
+            this.boundingBox(89,111,-316,-294);
+            this.boundingBox(-161,-139,-111,-89);
+            this.boundingBox(179,201,-61,-39);
+            this.boundingBox(-201,-179,-311,-289);
 
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
