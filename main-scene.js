@@ -13,7 +13,7 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.current_level = 1;
+            this.current_level = 2;
 
             const shapes = {
                 'box': new Cube(),
@@ -40,6 +40,7 @@ window.Xplore = window.classes.Xplore =
             this.textures = {
                 snow: this.materials.white.override({texture: context.get_instance('assets/snow.jpg')}),
                 snow2: this.materials.white.override({texture: context.get_instance('assets/snow2.jpg')}),
+                ice: this.materials.white.override({texture: context.get_instance('assets/ice.jpg')}),
                 grass: this.materials.white.override({texture: context.get_instance("assets/grass.jpg")}),
                 sky: this.materials.white.override({texture: context.get_instance('assets/sky_texture.jpg')}),
                 mountains: this.materials.white.override({texture: context.get_instance('assets/mountains.jpg')}),
@@ -205,7 +206,7 @@ window.Xplore = window.classes.Xplore =
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
 
-            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
+            if (cam_x < -97 && cam_x > -103 && cam_z < -277 && cam_z > -283){
                 this.current_level = 2;
             }
         }
@@ -287,11 +288,31 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawMountain(){
+            let gs = this.globals.graphics_state
+            let model_transform = Mat4.translation([-285,30,-300])
+            model_transform = model_transform.times(Mat4.rotation(Math.PI/4, Vec.of(0,0,-1)))
+            model_transform = model_transform.times(Mat4.scale([200, 200, 200]))
+            this.shapes.pyramid.draw(gs, model_transform, this.textures.snow2)
+            model_transform = model_transform.times(Mat4.scale([1/4, 1, 1/4]))
+            model_transform = model_transform.times(Mat4.translation([0, .43, 0]))
+            model_transform = model_transform.times(Mat4.rotation(Math.PI/4.5, Vec.of(0,0,-1)))
+
+            this.shapes.pyramid.draw(gs, model_transform, this.textures.snow2)
+
+
+        }
+
         drawLevelTwo(){
-            this.drawGround(0, 0, -200, 400, this.textures.snow);
             this.drawSnow(7, 10, 6);
+            this.drawGround(0, 0, -200, 400, this.textures.snow);
             this.drawBorder(0, -250, -200, 400, 500, this.textures.snow_bg)
             this.drawGround(0, 200, -200, 400, this.textures.clouds)
+
+            this.drawGround(-50, .1, -40, 70, this.textures.ice);
+            this.drawGround(70, .1, -40, 70, this.textures.ice);
+            this.drawMountain();
+
             var j;
             for (j = 0; j < 50; j++) {
                 this.drawSnowyTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
