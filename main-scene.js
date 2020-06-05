@@ -13,7 +13,7 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.current_level = 1;
+            this.current_level = 6;
             this.minDomain = [-195,-395];
             this.maxDomain = [195,-5];
 
@@ -24,15 +24,12 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                
-
                 'sphere': new Subdivision_Sphere(4),
                 'pyr1': new SandCube(),
                 'pyr2': new SandCube(),
                 'pyr3': new SandCube(),
                 'pyr4': new SandCube(),
                 'pyr5': new SandCube()
-
             };
 
             shapes.pyr1.texture_coords = shapes.pyr1.texture_coords.map(v => Vec.of(v[0] * 10, v[1] * 1));
@@ -45,8 +42,7 @@ window.Xplore = window.classes.Xplore =
 
                 white: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {ambient: 1,}),
                 black: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1)),
-
-
+                blue: context.get_instance(Phong_Shader).material(Color.of(.3, .3, 1, 1)),
                 bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
@@ -54,7 +50,6 @@ window.Xplore = window.classes.Xplore =
                 fire1:    context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), {ambient: 1, specularity:0}),
                 fire2:    context.get_instance( Phong_Shader ).material( Color.of( 1,0.5,0,1 ), {ambient: 1, specularity:0, diffusivity:0}),
                 fire3:    context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), {ambient: 1, specularity:0}),
-
                 sand:     context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {ambient: 1, specularity:1}),
                 dunes:    context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {ambient: 1, specularity:1}),
                 sunHalo:  context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {ambient: 1, specularity:1}),
@@ -81,6 +76,7 @@ window.Xplore = window.classes.Xplore =
                 clouds: this.materials.white.override({texture: context.get_instance('assets/cloudy.jpg')}),
                 fire: this.materials.white.override({texture: context.get_instance('assets/fire.jpg')}),
                 fire2: this.materials.white.override({texture: context.get_instance('assets/fire2.jpg')}),
+                bruins: this.materials.white.override({texture: context.get_instance('assets/bruins.jpg')}),
             }
 
             // At the beginning of our program, load one of each of these shape
@@ -222,8 +218,7 @@ window.Xplore = window.classes.Xplore =
             } 
 
         }
-      
-     
+
         drawForest() {
             var i;
             // Draw 10 trees on each side to make a path
@@ -419,7 +414,7 @@ window.Xplore = window.classes.Xplore =
 
         }
 
-        drawSnow(height, size, speed){
+        drawSnow(height, size, speed, texture){
             let t = (this.globals.graphics_state.animation_time / 1000) % (height/speed);
             let cam_x = this.ctrans[0][3];
             let cam_z = this.ctrans[2][3];
@@ -433,7 +428,7 @@ window.Xplore = window.classes.Xplore =
                 trans_transform = fall_transform.times(Mat4.translation([x, 0, 0]))
                 for (z = 0; z > -size; z--){
                     trans_transform = trans_transform.times(Mat4.translation([0, 0, -1]))
-                    this.shapes.box.draw(this.globals.graphics_state, trans_transform.times(Mat4.scale([.1,.1,.1])), this.textures.snow)
+                    this.shapes.box.draw(this.globals.graphics_state, trans_transform.times(Mat4.scale([.1,.1,.1])), texture)
                 }
             }
         }
@@ -486,12 +481,10 @@ window.Xplore = window.classes.Xplore =
             model_transform = model_transform.times(Mat4.rotation(Math.PI/4.5, Vec.of(0,0,-1)))
 
             this.shapes.pyramid.draw(gs, model_transform, this.textures.snow2)
-
-
         }
 
         drawLevelThree(){
-            this.drawSnow(7, 10, 6);
+            this.drawSnow(7, 8, 6, this.textures.snow);
             this.drawGround(0, 0, -200, 400, this.textures.snow);
             this.drawBorder(0, -250, -200, 400, 500, this.textures.snow_bg)
             this.drawGround(0, 200, -200, 400, this.textures.clouds)
@@ -544,6 +537,13 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawBruinLevel(){
+            this.drawGround(0, 0, -200, 400, this.textures.bruins);
+            this.drawBorder(0, 0, -200, 400, 400, this.textures.bruins)
+            this.drawSnow(10, 3, 10, this.materials.fire3)
+            this.drawSnow(10, 4, 10, this.materials.blue)
+        }
+
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
             return Vec.of(event.clientX - (rect.left + rect.right) / 2,
@@ -587,6 +587,9 @@ window.Xplore = window.classes.Xplore =
                     break;
                 case 2: this.drawLevelTwo(); break;
                 case 3: this.drawLevelThree(); break;
+                case 4: break;
+                case 5: break;
+                case 6: this.drawBruinLevel(); break;
 
 
                 default: this.drawLevelOne(); break;
