@@ -95,11 +95,11 @@ window.Xplore = window.classes.Xplore =
         make_control_panel()
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         {
-            this.key_triggered_button( "Move Forward",  [ "ArrowUp" ], () => this.movz = -1, () => undefined, () => this.movz = 0 );
-            this.key_triggered_button( "Move Backward",  [ "ArrowDown" ], () => this.movz = 1, () => undefined, () => this.movz = 0 );
+            this.key_triggered_button( "Move Forward",  [ "w" ], () => this.movz = -1, () => undefined, () => this.movz = 0 );
+            this.key_triggered_button( "Move Backward",  [ "s" ], () => this.movz = 1, () => undefined, () => this.movz = 0 );
             this.new_line();
-            this.key_triggered_button( "Move Left",  [ "ArrowLeft" ], () => this.movx = -1, () => undefined, () => this.movx = 0 );
-            this.key_triggered_button( "Move Right",  [ "ArrowRight" ], () => this.movx = 1, () => undefined, () => this.movx = 0 );
+            this.key_triggered_button( "Move Left",  [ "a" ], () => this.movx = -1, () => undefined, () => this.movx = 0 );
+            this.key_triggered_button( "Move Right",  [ "d" ], () => this.movx = 1, () => undefined, () => this.movx = 0 );
             this.new_line();
             this.key_triggered_button( "Look Upwards",  [ "i" ], () => this.rotv = 1, () => undefined, () => this.rotv = 0 );
             this.key_triggered_button( "Look Downwards",  [ "k" ], () => this.rotv = -1, () => undefined, () => this.rotv = 0 );
@@ -325,8 +325,8 @@ window.Xplore = window.classes.Xplore =
         }
 
         move() { // move camera, then update the undo/redo matrices
-            const h_trans = (this.mouse_down) ? 0.01*this.m_rh : 0.01*this.roth;
-            const v_trans = (this.mouse_down) ? 0.01*this.m_rv : 0.01*this.rotv;
+            const h_trans = (this.mouse_down) ? 0.01*this.m_rh : 0.03*this.roth;
+            const v_trans = (this.mouse_down) ? 0.01*this.m_rv : 0.03*this.rotv;
 
             const a = this.ctrans.times(this.ud)
                                  .times(Mat4.translation([this.movx, 0, this.movz]))
