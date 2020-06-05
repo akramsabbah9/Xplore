@@ -14,6 +14,7 @@ window.Xplore = window.classes.Xplore =
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             this.current_level = 1;
+            this.lava_stage = 0;
 
 
             const shapes = {
@@ -133,27 +134,6 @@ window.Xplore = window.classes.Xplore =
             this.shapes.ground.draw(this.globals.graphics_state, model_transform, texture);
         }
 
-        drawBorder(x, y, z, size, height, texture){
-            let loc = Mat4.translation([x,y,z])
-            loc = loc.times(Mat4.scale([size, height, size]))
-            this.shapes.border.draw(this.globals.graphics_state, loc, texture)
-        }
-
-        /*drawLevelOne(){
-            this.drawGround(0, 0, -200, 400, this.grass_texture);
-            this.drawForest();
-            this.drawGround(0, 50, -200, 400, this.sky_texture)
-
-            this.drawBorder(0, -10, -200, 400, 100, this.mountains)
-
-            let cam_x = this.ctrans[0][3]
-            let cam_z = this.ctrans[2][3]
-
-            if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
-                this.current_level = 2;
-            }
-        }*/
-
         drawShape(shape, x, y, z, size, roty, texture) {
             const trans = Mat4.identity().times(Mat4.translation([x,y,z]))
                                          .times(Mat4.scale([size, size, size]))
@@ -163,15 +143,61 @@ window.Xplore = window.classes.Xplore =
 
         drawLavaLevel() {
             this.drawStage();
+            if (!this.lava_stage) this.lava_init();
+            let fell = 1;
+            for (let i = 0; i < this.platforms.length; i++) {
+                // move & draw platform
+                //this.move_platform(this.platforms[i]);
+                this.draw_platform(this.platforms[i]);
+                // check collision
+                if (!this.platforms[i].outside(this.ctrans)) fell = 0;
+                if (this.platforms[i].check_button(this.ctrans)) this.add_platform(this.platforms[i].next); 
+            }
+            if (fell) this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0]));
+            if (this.lava_stage == 2) this.lava_end();
         }
 
-        drawStage() {
+        drawStage() {//FIX
             this.drawShape(this.shapes.ground, 0, -1, 0, 1200, Math.PI/2, this.materials.lava);
             const sky_trans = Mat4.identity().times(Mat4.translation([0,-300,0]))
                                              .times(Mat4.scale([600, 600, 600]))
                                              .times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)));
-            this.drawShape(this.shapes.ground, 0, 0, 0, 1200, 0, this.glass);
+            //this.drawShape(this.shapes.ground, 0, 0, 0, 1200, 0, this.glass);
             this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.nebula);
+        }
+
+        lava_init() {
+            this.lights.push(new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)); // increase light
+            /*this.ctrans = Mat4.inverse(Mat4.rotation(Math.PI/2, Vec.of(1, 0, 0))
+                                .times(Mat4.translation([0, -900, 0])));             // reset camera*/
+            this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0]));
+            this.platformlist = [[0, 0, 200, 200, true, 70, -70, 1],
+                                 [0, -200, 50, 200, true, 20, -70, 2],
+                                 [-75, -325, 200, 50, false, 0, 0, 3]];
+
+            this.platforms = [new Platform(0, 0, 200, 200, new Button(true, 70, -70), 1)];        // add first platform and button
+            this.lava_stage = 1;                                                                // turn off init flag
+        }
+
+        lava_end() {
+            this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)]; // reset lights
+            this.current_level++;
+        }
+
+        draw_platform(p) {
+            const loc = Mat4.identity().times(Mat4.translation([p.x,0,p.y]));
+            const scale = loc.times(Mat4.scale([p.length, 1, p.width]));
+            this.shapes.ground.draw(this.globals.graphics_state, scale, this.glass);
+            if (p.button.exists) {
+                const l2 = loc.times(Mat4.translation([p.button.x,0,p.button.y]))
+                              .times(Mat4.scale([5, 30, 5]));
+                this.shapes.pyramid.draw(this.globals.graphics_state, l2, this.plastic);
+            }
+        }
+
+        add_platform(next) {
+            const n = this.platformlist[next];
+            this.platforms.push(new Platform(n[0], n[1], n[2], n[3], new Button(n[4], n[5], n[6]), n[7]));
         }
 
         mouse_position(event, canvas) {
@@ -191,8 +217,8 @@ window.Xplore = window.classes.Xplore =
         }
 
         move() { // move camera, then update the undo/redo matrices
-            const h_trans = (this.mouse_down) ? 0.01*this.m_rh : 0.01*this.roth;
-            const v_trans = (this.mouse_down) ? 0.01*this.m_rv : 0.01*this.rotv;
+            const h_trans = (this.mouse_down) ? 0.01*this.m_rh : 0.03*this.roth;
+            const v_trans = (this.mouse_down) ? 0.01*this.m_rv : 0.03*this.rotv;
 
             const a = this.ctrans.times(this.ud)
                                  .times(Mat4.translation([this.movx, 0, this.movz]))
@@ -239,5 +265,42 @@ class Texture_Scroll_X extends Phong_Shader {
           else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
           gl_FragColor.xyz += phong_model_lights( N );                     // Compute the final color with contributions from lights.
         }`;
+    }
+}
+
+class Platform {
+    constructor(x, y, l, w, button, n) {
+        this.x = x;
+        this.y = y;
+        this.length = l;
+        this.width = w;
+        this.button = button;
+        this.next = n;
+    }
+
+    outside(matrix) {
+        /*console.log(Math.abs(this.x-matrix[0][3])>this.length/2);
+        console.log(Math.abs(this.y-matrix[2][3])>this.width/2);*/
+        const l = (Math.abs(this.x-matrix[0][3]) > this.length/2) || (Math.abs(this.y-matrix[2][3]) > this.width/2);
+        //if (l) console.log("outside\n");
+        return l;
+    }
+
+    check_button(matrix) {
+        if (this.button.exists) {
+            const collided = (Math.abs(this.x+this.button.x-matrix[0][3]) <= 5)
+                           && (Math.abs(this.y+this.button.y-matrix[2][3]) <= 5);
+            if (collided) this.button.exists = false;
+            return collided;
+        }
+        return false;
+    }
+};
+
+class Button {
+    constructor(exists, x, y) {
+        this.exists = exists;
+        this.x = x;
+        this.y = y;
     }
 }
