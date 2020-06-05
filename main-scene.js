@@ -13,7 +13,7 @@ window.Xplore = window.classes.Xplore =
             this.ctrans = Mat4.inverse( context.globals.graphics_state.camera_transform ); // transformation matrix for camera
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.current_level = 2;
+            this.current_level = 1;
 
             const shapes = {
                 'box': new Cube(),
@@ -37,6 +37,21 @@ window.Xplore = window.classes.Xplore =
                 fire3:    context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), {ambient: 1, specularity:0}),
             };
 
+            this.textures = {
+                snow: this.materials.white.override({texture: context.get_instance('assets/snow.jpg')}),
+                snow2: this.materials.white.override({texture: context.get_instance('assets/snow2.jpg')}),
+                grass: this.materials.white.override({texture: context.get_instance("assets/grass.jpg")}),
+                sky: this.materials.white.override({texture: context.get_instance('assets/sky_texture.jpg')}),
+                mountains: this.materials.white.override({texture: context.get_instance('assets/mountains.jpg')}),
+                snow_bg: this.materials.white.override({texture: context.get_instance('assets/snow_bg.png')}),
+                snow_leaves: this.materials.white.override({texture: context.get_instance('assets/snow_leaves.jpg')}),
+                bark: this.materials.white.override({texture: context.get_instance('assets/bark.jpg')}),
+                bark2: this.materials.white.override({texture: context.get_instance('assets/bark2.jpg')}),
+                leather: this.materials.white.override({texture: context.get_instance('assets/leather.jpg')}),
+                clouds: this.materials.white.override({texture: context.get_instance('assets/cloudy.jpg')}),
+                fire: this.materials.white.override({texture: context.get_instance('assets/fire.jpg')}),
+                fire2: this.materials.white.override({texture: context.get_instance('assets/fire2.jpg')}),
+            }
 
             // At the beginning of our program, load one of each of these shape
             // definitions onto the GPU.  NOTE:  Only do this ONCE per shape
@@ -46,22 +61,6 @@ window.Xplore = window.classes.Xplore =
             // multiple cubes.  Don't define more than one blueprint for the
             // same thing here.
             this.submit_shapes(context, shapes);
-
-            this.plastic = context.get_instance(Phong_Shader).material(Color.of(.9, .5, .9, 1), {
-                ambient: .4,
-                diffusivity: .4,
-                specularity: .6,
-            });
-
-            this.grass_texture = this.materials.white.override({texture: context.get_instance("assets/grass.jpg")});
-            this.sky_texture = this.materials.white.override({texture: context.get_instance('assets/sky_texture.jpg')})
-            this.mountains_texture = this.materials.white.override({texture: context.get_instance('assets/mountains.jpg')})
-            this.snow_texture = this.materials.white.override({texture: context.get_instance('assets/snow.jpg')})
-            this.snow_bg = this.materials.white.override({texture: context.get_instance('assets/snow_bg.png')})
-            this.snow_leaves = this.materials.white.override({texture: context.get_instance('assets/snow_leaves.jpg')})
-            this.bark_texture = this.materials.white.override({texture: context.get_instance('assets/bark.jpg')})
-            this.leather_texture = this.materials.white.override({texture: context.get_instance('assets/leather.jpg')})
-            this.cloudy_texture = this.materials.white.override({texture: context.get_instance('assets/cloudy.jpg')})
 
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, 1, 1, 1), 100000)];
@@ -129,7 +128,7 @@ window.Xplore = window.classes.Xplore =
             let leaves_top_transform = loc.times(Mat4.translation([0,1.6*height,0]))
                                         .times(Mat4.scale([1*height,1*height,1*height]));
 
-            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.materials.bark);
+            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.textures.bark);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.materials.green1);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.materials.green2);
             this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.materials.green3);
@@ -158,7 +157,7 @@ window.Xplore = window.classes.Xplore =
 
         drawFire(x, y, z) {
             // Draw a fire at (x = -100, y = 0, z = -280 )
-            let loc = Mat4.identity().times(Mat4.translation([x, y, z]))
+            let loc = Mat4.identity().times(Mat4.translation([x, y, z]).times(Mat4.scale([1.5,1.5,1.5])))
 
             let wood1 = loc.times(Mat4.rotation(0.78, Vec.of(0,1,0)))
                 .times(Mat4.scale([3,0.5,0.5]));
@@ -181,11 +180,11 @@ window.Xplore = window.classes.Xplore =
                 .times(Mat4.scale([1,fireSize3,1]));
 
 
-            this.shapes.box.draw(this.globals.graphics_state, wood1, this.materials.bark)
-            this.shapes.box.draw(this.globals.graphics_state, wood2, this.materials.bark)
-            this.shapes.pyramid.draw(this.globals.graphics_state, fire1, this.materials.fire1)
-            this.shapes.pyramid.draw(this.globals.graphics_state, fire2, this.materials.fire2)
-            this.shapes.pyramid.draw(this.globals.graphics_state, fire3, this.materials.fire3)
+            this.shapes.box.draw(this.globals.graphics_state, wood1, this.textures.bark)
+            this.shapes.box.draw(this.globals.graphics_state, wood2, this.textures.bark)
+            this.shapes.pyramid.draw(this.globals.graphics_state, fire1, this.textures.fire)
+            this.shapes.pyramid.draw(this.globals.graphics_state, fire2, this.textures.fire)
+            this.shapes.pyramid.draw(this.globals.graphics_state, fire3, this.textures.fire)
 
         }
 
@@ -197,11 +196,11 @@ window.Xplore = window.classes.Xplore =
 
 
         drawLevelOne(){
-            this.drawGround(0, 0, -200, 400, this.grass_texture);
+            this.drawGround(0, 0, -200, 400, this.textures.grass);
             this.drawForest();
-            this.drawGround(0, 50, -200, 400, this.sky_texture)
+            this.drawGround(0, 50, -200, 400, this.textures.sky)
 
-            this.drawBorder(0, -10, -200, 400, 100, this.mountains_texture)
+            this.drawBorder(0, -10, -200, 400, 100, this.textures.mountains)
 
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
@@ -225,10 +224,10 @@ window.Xplore = window.classes.Xplore =
             let leaves_top_transform = loc.times(Mat4.translation([0,1.6*height,0]))
                 .times(Mat4.scale([1*height,1*height,1*height]));
 
-            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.bark_texture);
-            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.snow_leaves);
-            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.snow_leaves);
-            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.snow_leaves);
+            this.shapes.box.draw(this.globals.graphics_state, trunk_transform, this.textures.bark);
+            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_bottom_transform, this.textures.snow_leaves);
+            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_middle_transform, this.textures.snow_leaves);
+            this.shapes.pyramid.draw(this.globals.graphics_state, leaves_top_transform, this.textures.snow_leaves);
 
         }
 
@@ -246,7 +245,7 @@ window.Xplore = window.classes.Xplore =
                 trans_transform = fall_transform.times(Mat4.translation([x, 0, 0]))
                 for (z = 0; z > -size; z--){
                     trans_transform = trans_transform.times(Mat4.translation([0, 0, -1]))
-                    this.shapes.box.draw(this.globals.graphics_state, trans_transform.times(Mat4.scale([.1,.1,.1])), this.snow_texture)
+                    this.shapes.box.draw(this.globals.graphics_state, trans_transform.times(Mat4.scale([.1,.1,.1])), this.textures.snow)
                 }
             }
         }
@@ -257,11 +256,11 @@ window.Xplore = window.classes.Xplore =
             model_transform = model_transform.times(Mat4.scale([size, size, size]));
 
             //body
-            this.shapes.sphere.draw(gs, model_transform, this.snow_texture)
+            this.shapes.sphere.draw(gs, model_transform, this.textures.snow2)
             model_transform = model_transform.times(Mat4.translation([0, 1.6, 0]))
-            this.shapes.sphere.draw(gs, model_transform, this.snow_texture)
+            this.shapes.sphere.draw(gs, model_transform, this.textures.snow2)
             model_transform = model_transform.times(Mat4.translation([0, 1.6, 0]))
-            this.shapes.sphere.draw(gs, model_transform, this.snow_texture)
+            this.shapes.sphere.draw(gs, model_transform, this.textures.snow2)
 
             //eyes
             model_transform = model_transform.times(Mat4.scale([.1, .1, .1]));
@@ -282,17 +281,17 @@ window.Xplore = window.classes.Xplore =
                 model_transform = model_transform.times(Mat4.translation([0,4,0]))
 
                 model_transform = model_transform.times(Mat4.scale([1.5, .1, 1.5]))
-                this.shapes.box.draw(gs, model_transform, this.leather_texture)
+                this.shapes.box.draw(gs, model_transform, this.textures.leather)
                 model_transform = model_transform.times(Mat4.scale([.6, 15, .6]))
-                this.shapes.box.draw(gs, model_transform, this.leather_texture)
+                this.shapes.box.draw(gs, model_transform, this.textures.leather)
             }
         }
 
         drawLevelTwo(){
-            this.drawGround(0, 0, -200, 400, this.snow_texture);
+            this.drawGround(0, 0, -200, 400, this.textures.snow);
             this.drawSnow(7, 10, 6);
-            this.drawBorder(0, -250, -200, 400, 500, this.snow_bg)
-            this.drawGround(0, 200, -200, 400, this.cloudy_texture)
+            this.drawBorder(0, -250, -200, 400, 500, this.textures.snow_bg)
+            this.drawGround(0, 200, -200, 400, this.textures.clouds)
             var j;
             for (j = 0; j < 50; j++) {
                 this.drawSnowyTree(this.randomX[j], this.randomZ[j], this.randomSize[j]);
@@ -344,8 +343,7 @@ window.Xplore = window.classes.Xplore =
 
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
-
-
+            
             switch(this.current_level){
                 case 1:
                     this.drawLevelOne();
