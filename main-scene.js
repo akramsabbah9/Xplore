@@ -14,7 +14,8 @@ window.Xplore = window.classes.Xplore =
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             this.current_level = 1;
-
+            this.minDomain = [-195,-395];
+            this.maxDomain = [195,-5];
 
             const shapes = {
                 'box': new Cube(),
@@ -22,7 +23,18 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
+                'pyr1': new Cube(),
+                'pyr2': new Cube(),
+                'pyr3': new Cube(),
+                'pyr4': new Cube(),
+                'pyr5': new Cube()
             };
+
+            shapes.pyr1.texture_coords = shapes.pyr1.texture_coords.map(v => Vec.of(v[0] * 10, v[1] * 1));
+            shapes.pyr2.texture_coords = shapes.pyr2.texture_coords.map(v => Vec.of(v[0] * 8, v[1] * 1));
+            shapes.pyr3.texture_coords = shapes.pyr3.texture_coords.map(v => Vec.of(v[0] * 6, v[1] * 1));
+            shapes.pyr4.texture_coords = shapes.pyr4.texture_coords.map(v => Vec.of(v[0] * 4, v[1] * 1));
+            shapes.pyr5.texture_coords = shapes.pyr5.texture_coords.map(v => Vec.of(v[0] * 2, v[1] * 1));
 
             this.materials = {
                 grass: context.get_instance(Phong_Shader).material(Color.of(0, 1, 0, 1), {
@@ -33,6 +45,7 @@ window.Xplore = window.classes.Xplore =
                     ambient: 1,
                     diffusivity: .3
                 }),
+
                 bark:     context.get_instance( Phong_Shader ).material( Color.of( 0.55,0.27,0.08,1 )),
                 green1:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.3,0.1,1 ), {ambient: 0.2}),
                 green2:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.4,0.1,1 ), {ambient: 0.4}),
@@ -40,6 +53,14 @@ window.Xplore = window.classes.Xplore =
                 fire1:    context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), {ambient: 1, specularity:0}),
                 fire2:    context.get_instance( Phong_Shader ).material( Color.of( 1,0.5,0,1 ), {ambient: 1, specularity:0, diffusivity:0}),
                 fire3:    context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), {ambient: 1, specularity:0}),
+                sand:     context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {ambient: 1, specularity:1}),
+                dunes:    context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {ambient: 1, specularity:1}),
+                sunHalo:  context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {ambient: 1, specularity:1}),
+                pyr:      context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), {
+                        ambient: 1, 
+                        texture: context.get_instance("assets/AztecTexture.jpg")}),
+                bird:     context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ))
+                
             };
 
 
@@ -61,7 +82,11 @@ window.Xplore = window.classes.Xplore =
             this.white = context.get_instance(Basic_Shader).material();
             this.plastic = this.clay.override({specularity: .6});
             this.grass_texture = this.materials.grass.override({texture: context.get_instance("assets/grass.jpg")});
-            this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')})
+            this.sand_texture = this.materials.sand.override({texture: context.get_instance("assets/sand.jpg")});
+            this.stars = this.plastic.override({texture: context.get_instance('assets/stars.png')});
+            this.dune_texture = this.materials.dunes.override({texture: context.get_instance('assets/dunes.jpg')});
+            this.sunHalo_texture = this.materials.sunHalo.override({texture: context.get_instance('assets/sunHalo.jpg')});
+
 
             this.sky_texture = this.materials.sky.override({texture: context.get_instance('assets/sky_texture.jpg')})
             this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')})
@@ -138,6 +163,134 @@ window.Xplore = window.classes.Xplore =
 
         }
 
+        drawPyramid(x, z) {           
+            let location = Mat4.identity().times(Mat4.translation([x,5,z]));            
+
+            let tier1 = location.times(Mat4.scale([50,5,50]));
+            let tier2 = location.times(Mat4.translation([0,10,0])).times(Mat4.scale([40,5,40]));
+            let tier3 = location.times(Mat4.translation([0,20,0])).times(Mat4.scale([30,5,30]));
+            let tier4 = location.times(Mat4.translation([0,30,0])).times(Mat4.scale([20,5,20]));
+            let tier5 = location.times(Mat4.translation([0,40,0])).times(Mat4.scale([10,5,10]));
+            let gem = location.times(Mat4.translation([0,-3,0])).times(Mat4.scale([4,4,4]));
+
+            this.shapes.pyr1.draw(this.globals.graphics_state, tier1, this.materials.pyr);
+            this.shapes.pyr2.draw(this.globals.graphics_state, tier2, this.materials.pyr);
+            this.shapes.pyr3.draw(this.globals.graphics_state, tier3, this.materials.pyr);
+            this.shapes.pyr4.draw(this.globals.graphics_state, tier4, this.materials.pyr);
+            this.shapes.pyr5.draw(this.globals.graphics_state, tier5, this.materials.pyr);
+            this.shapes.pyramid.draw(this.globals.graphics_state, gem, this.materials.bird);
+
+            let minX = x - 52;
+            let maxX = x + 52;
+            let minZ = z - 52;
+            let maxZ = z + 52;
+
+            this.boundingBox(minX,maxX,minZ,maxZ);
+
+        }
+
+        boundingBox(minX,maxX,minZ,maxZ) {
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+
+            if ( cam_x > minX && cam_x < maxX && cam_z > minZ && cam_z < maxZ) {
+                
+                if ((maxX-cam_x) <= (cam_x-minX)) {
+                   this.ctrans[0][3] = this.ctrans[0][3]+1;     
+                }
+                else {
+                   this.ctrans[0][3] = this.ctrans[0][3]-1;     
+                }
+
+                if ((maxZ-cam_z) <= (cam_z-minZ)) {
+                   this.ctrans[2][3] = this.ctrans[2][3]+1;     
+                }
+                else {
+                   this.ctrans[2][3] = this.ctrans[2][3]-1;  
+                }
+                
+            } 
+
+        }
+       
+
+        drawVulture() {
+        const t = this.globals.graphics_state.animation_time / 5000
+        let angle1 = t;
+
+          let wingRight = Mat4.identity().times(Mat4.translation([0,40,-200])).times(Mat4.rotation(angle1, Vec.of(0,1,0)))
+                .times(Mat4.translation([30,0,0])).times(Mat4.rotation(0.25, Vec.of(0,0,1))).times(Mat4.scale([1,0.05,0.5]));
+          
+          let wingLeft = Mat4.identity().times(Mat4.translation([0,40,-200])).times(Mat4.rotation(angle1, Vec.of(0,1,0)))
+                .times(Mat4.translation([28,0,0])).times(Mat4.rotation(-0.25, Vec.of(0,0,1))).times(Mat4.scale([1,0.05,0.5]));                         
+          
+          let wingTipRight = Mat4.identity().times(Mat4.translation([0,40,-200])).times(Mat4.rotation(angle1, Vec.of(0,1,0)))
+                 .times(Mat4.translation([31.2,0,0])).times(Mat4.rotation(-.4, Vec.of(0,0,1)))
+                 .times(Mat4.translation([-.3,0,0])).times(Mat4.scale([0.05,1,1]));
+          
+          let wingTipLeft = Mat4.identity().times(Mat4.translation([0,40,-200])).times(Mat4.rotation(angle1, Vec.of(0,1,0)))
+                 .times(Mat4.translation([26.8,0,0])).times(Mat4.rotation(.4, Vec.of(0,0,1)))
+                 .times(Mat4.translation([.3,0,0])).times(Mat4.scale([0.05,1,1]));
+
+          let wingRight2 = Mat4.identity().times(Mat4.translation([0,35,-100])).times(Mat4.rotation(3*angle1+2, Vec.of(0,1,0)))
+                .times(Mat4.translation([15,0,0])).times(Mat4.rotation(0.7, Vec.of(0,0,1))).times(Mat4.scale([1,0.05,0.5]));
+          
+          let wingLeft2 = Mat4.identity().times(Mat4.translation([0,34.2,-100])).times(Mat4.rotation(3*angle1+2, Vec.of(0,1,0)))
+                .times(Mat4.translation([13.3,0,0])).times(Mat4.rotation(0.2, Vec.of(0,0,1))).times(Mat4.scale([1,0.05,0.5]));                         
+          
+          let wingTipRight2 = Mat4.identity().times(Mat4.translation([0,35,-100])).times(Mat4.rotation(3*angle1+2, Vec.of(0,1,0)))
+                 .times(Mat4.translation([16,0.6,0])).times(Mat4.rotation(-.1, Vec.of(0,0,1)))
+                 .times(Mat4.translation([-.2,0,0])).times(Mat4.scale([0.05,1,1]));
+          
+          let wingTipLeft2 = Mat4.identity().times(Mat4.translation([0,35,-100])).times(Mat4.rotation(3*angle1+2, Vec.of(0,1,0)))
+                 .times(Mat4.translation([12.15,-1.2,0])).times(Mat4.rotation(1, Vec.of(0,0,1)))
+                 .times(Mat4.translation([.3,0,0])).times(Mat4.scale([0.05,1,1]));                 
+
+          this.shapes.box.draw(this.globals.graphics_state, wingRight, this.materials.bird)
+          this.shapes.box.draw(this.globals.graphics_state, wingLeft, this.materials.bird)
+          this.shapes.pyramid.draw(this.globals.graphics_state, wingTipRight, this.materials.bird)
+          this.shapes.pyramid.draw(this.globals.graphics_state, wingTipLeft, this.materials.bird)
+          this.shapes.box.draw(this.globals.graphics_state, wingRight2, this.materials.bird)
+          this.shapes.box.draw(this.globals.graphics_state, wingLeft2, this.materials.bird)
+          this.shapes.pyramid.draw(this.globals.graphics_state, wingTipRight2, this.materials.bird)
+          this.shapes.pyramid.draw(this.globals.graphics_state, wingTipLeft2, this.materials.bird)
+        }
+
+        drawCactus(x,z) {
+            let height = 10;
+
+            let loc = Mat4.identity().times(Mat4.translation([x,height/2,z]));
+
+            let stem = loc.times(Mat4.scale([0.5,height,0.5]));
+
+            let fork1 = loc.times(Mat4.rotation(2, Vec.of(0,1,0)))
+                          .times(Mat4.translation([0.15*height,3,0]))                          
+                          .times(Mat4.scale([0.15*height,0.5,0.5]));
+            let end1 = loc.times(Mat4.rotation(2, Vec.of(0,1,0)))
+                          .times(Mat4.translation([3,5,0]))  
+                          .times(Mat4.scale([0.5,2.5,0.5]));   
+            let fork2 = loc.times(Mat4.rotation(4.1, Vec.of(0,1,0)))
+                          .times(Mat4.translation([2,1,0]))                          
+                          .times(Mat4.scale([2,0.5,0.5]));
+            let end2 = loc.times(Mat4.rotation(4.1, Vec.of(0,1,0)))
+                          .times(Mat4.translation([3.5,4,0]))  
+                          .times(Mat4.scale([0.5,2.5,0.5]));                
+            let fork3 = loc.times(Mat4.rotation(0, Vec.of(0,1,0)))
+                          .times(Mat4.translation([1.5,-2,0]))                          
+                          .times(Mat4.scale([1.5,0.5,0.5]));
+            let end3 = loc.times(Mat4.rotation(0, Vec.of(0,1,0)))
+                          .times(Mat4.translation([3,1.5,0]))  
+                          .times(Mat4.scale([0.5,4,0.5])); 
+
+            this.shapes.box.draw(this.globals.graphics_state, stem, this.materials.green3);
+            this.shapes.box.draw(this.globals.graphics_state, fork1, this.materials.green3);
+            this.shapes.box.draw(this.globals.graphics_state, end1, this.materials.green3);
+            this.shapes.box.draw(this.globals.graphics_state, fork2, this.materials.green3);
+            this.shapes.box.draw(this.globals.graphics_state, end2, this.materials.green3);
+            this.shapes.box.draw(this.globals.graphics_state, fork3, this.materials.green3);
+            this.shapes.box.draw(this.globals.graphics_state, end3, this.materials.green3);            
+        }
+
         drawForest() {
             var i;
             // Draw 10 trees on each side to make a path
@@ -212,6 +365,22 @@ window.Xplore = window.classes.Xplore =
             }
         }
 
+        drawLevelTwo() {
+            this.drawGround(0, 0, -200, 400, this.sand_texture);
+            
+            this.drawGround(0, 50, -200, 400, this.sunHalo_texture)
+
+            this.drawBorder(0, -40, -200, 400, 100, this.dune_texture)
+            this.drawPyramid(0, -200)
+
+            this.drawVulture();
+
+            this.drawCactus(-40,-50)
+            this.drawCactus(80,-80)
+            this.drawCactus(-80,-150)
+            this.drawCactus(20,-30) 
+        }
+
         mouse_position(event, canvas) {
             const rect = canvas.getBoundingClientRect();
             return Vec.of(event.clientX - (rect.left + rect.right) / 2,
@@ -251,14 +420,31 @@ window.Xplore = window.classes.Xplore =
 
             switch(this.current_level){
                 case 1: this.drawLevelOne(); break;
-                case 2: break;
+                case 2: this.drawLevelTwo(); break;
 
                 default: this.drawLevelOne();
 
             }
 
+            let cam_x = this.ctrans[0][3]
+            let cam_z = this.ctrans[2][3]
+
             this.ctrans = this.move();
-            graphics_state.camera_transform = Mat4.inverse(this.ctrans);
+            graphics_state.camera_transform = Mat4.inverse(this.ctrans);   
+
+            if ( cam_x < this.minDomain[0]) {
+                this.ctrans[0][3] = this.ctrans[0][3]+1;
+            } 
+            else if (cam_x > this.maxDomain[0]) {
+               this.ctrans[0][3] = this.ctrans[0][3]-1;
+            }
+            else if ( cam_z < this.minDomain[1]) {
+                this.ctrans[2][3] = this.ctrans[2][3]+1;
+            } 
+            else if ( cam_z > this.maxDomain[1]) {
+                this.ctrans[2][3] = this.ctrans[2][3]-1;
+            } 
+
 
         }
 
