@@ -576,6 +576,11 @@ window.Xplore = window.classes.Xplore =
             return a;
         }
 
+        reset_camera(x, y, z) { // reset camera and place it at the given x,y,z coords
+            this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 3]));
+            this.ud = this.rd = Mat4.identity();
+        }
+
 
         display(graphics_state) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
