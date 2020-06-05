@@ -227,14 +227,13 @@ window.Xplore = window.classes.Xplore =
                 this.current_level = 2;
             }
         }
-        drawLevelFive(){
+        drawLevelFour(){
             this.drawGround(0, 0, -200, 400, this.materials.sand);
-            this.drawForest();
+            
             this.drawGround(0, 90, -200, 400, this.materials.waterSurface)
 
             this.drawBorder(0, -10, -200, 400, 100, this.materials.waterBorder)
             
-            this.shapes.box.draw(this.globals.graphics_state, Mat4.identity().times(Mat4.translation([1,0,-10])), this.materials.bark)
 
         
 
@@ -242,7 +241,7 @@ window.Xplore = window.classes.Xplore =
             let cam_z = this.ctrans[2][3]
 
             if (cam_x < -98 && cam_x > -102 && cam_z < -278 && cam_z > -282){
-                this.current_level = 2;
+                this.current_level = 5;
             }
 
         }
@@ -284,10 +283,10 @@ window.Xplore = window.classes.Xplore =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
 
 
-            switch(5){
+            switch(this.current_level){
                 case 1: this.drawLevelOne(); break;
                 case 2: break;
-                case 5: this.drawLevelFive(); break;
+                case 4: this.drawLevelFour(); break;
 
                 default: this.drawLevelOne();
 
