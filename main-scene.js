@@ -74,6 +74,7 @@ window.Xplore = window.classes.Xplore =
             this.mountains = this.materials.sky.override({texture: context.get_instance('assets/mountains.jpg')});
             
             this.nebula = this.materials.sky.override({texture: context.get_instance('assets/night.jpg')});
+            this.glass = this.materials.glass.override({texture: context.get_instance('assets/glass.jpg')});
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)];
 
@@ -165,11 +166,11 @@ window.Xplore = window.classes.Xplore =
         }
 
         drawStage() {
-            this.drawShape(this.shapes.ground, 0, -1, 0, 400, Math.PI/2, this.materials.lava);
+            this.drawShape(this.shapes.ground, 0, -1, 0, 1200, Math.PI/2, this.materials.lava);
             const sky_trans = Mat4.identity().times(Mat4.translation([0,-300,0]))
                                              .times(Mat4.scale([600, 600, 600]))
                                              .times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)));
-            this.drawShape(this.shapes.ground, 0, 0, 0, 400, 0, this.materials.glass);
+            this.drawShape(this.shapes.ground, 0, 0, 0, 1200, 0, this.glass);
             this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.nebula);
         }
 
