@@ -16,9 +16,15 @@ window.Xplore = window.classes.Xplore =
                 'ground': new Ground(),
                 'triangle': new Triangle(),
                 'pyramid': new Pyramid(),
-                'model': new Shape_From_File("assets/fish.obj"), //obj data than is printed rendering wont work
+                'model': new Shape_From_File("assets/SandDollar.obj"), //obj data than is printed rendering wont work
                 'tree': new Tree(),
-                'fish': new Fish()
+                'fish': new Fish(),
+                'turtle': new Turtle(),
+                'whale': new Whale(),
+                'snail': new Snail(),
+                'fan': new FanShell(),
+                'dollar': new SandDollar()
+
             };
 
             this.materials = {
@@ -32,7 +38,11 @@ window.Xplore = window.classes.Xplore =
                 green3:   context.get_instance( Phong_Shader ).material( Color.of( 0,0.6,0.2,1 ), {ambient: 0.6}),
                 stars:    context.get_instance( Phong_Shader ).material( Color.of( 0, 0, 0, 1  ), {ambient: 1,
                         diffusivity:1,
-                        specularity: 0.1 })
+                        specularity: 0.1 }),
+                turtle:   context.get_instance( Phong_Shader ).material( Color.of( 0, 0, 0, 1  ), {ambient: 1,
+                        diffusivity:1,
+                        specularity: 0.1,
+                        texture: context.get_instance("assets/turtle.jpg") })
             };
 
 
@@ -118,9 +128,16 @@ window.Xplore = window.classes.Xplore =
         }
         //textures not working for fish, based on obj file
         drawModels () {
-            let modelt = Mat4.identity().times(Mat4.translation([25,25,25])).times(Mat4.scale([25,25,25]));
+            let modelt = Mat4.identity().times(Mat4.translation([25,25,25])).times(Mat4.scale([0.5,0.5,0.5]));
 //             this.shapes.fish.draw(this.globals.graphics_state, modelt, this.materials.green1);
-            this.shapes.tree.draw(this.globals.graphics_state, modelt, this.grass_texture);
+//             this.shapes.tree.draw(this.globals.graphics_state, modelt, this.grass_texture);
+            this.shapes.turtle.draw(this.globals.graphics_state, modelt, this.materials.green1);
+            modelt = Mat4.identity().times(Mat4.translation([25,50,25]))
+            this.shapes.whale.draw(this.globals.graphics_state, modelt, this.materials.green1);
+//              this.shapes.snail.draw(this.globals.graphics_state, modelt, this.materials.green1);
+//              this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.green1);
+            modelt = Mat4.identity().times(Mat4.translation([25,10,25])).times(Mat4.scale([50,50,50]))
+            this.shapes.dollar.draw(this.globals.graphics_state, modelt, this.materials.green1);
            
         }
 
