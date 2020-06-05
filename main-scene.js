@@ -14,6 +14,7 @@ window.Xplore = window.classes.Xplore =
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
             this.current_level = 1;
+            this.lava_stage = 0;
             this.minDomain = [-195,-395];
             this.maxDomain = [195,-5];
 
@@ -57,7 +58,12 @@ window.Xplore = window.classes.Xplore =
                         ambient: 1, 
                         texture: context.get_instance("assets/AztecTexture.jpg")}),
                 bird:     context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 )),
-                path:     context.get_instance( Phong_Shader ).material( Color.of( 0.2,0.3,0.3,1), {ambient: 0.1, specularity:1})
+                path:     context.get_instance( Phong_Shader ).material( Color.of( 0.2,0.3,0.3,1), {ambient: 0.1, specularity:1}),
+                sky: context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), { ambient: 1, diffusivity: .3 }),
+                glass:    context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 0.7)),
+                lava:     context.get_instance(Texture_Scroll_X).material(Color.of(0, 0, 0, 1), 
+                                                    {ambient: 1, texture: context.get_instance("assets/lava.jpg", false)} ),
+                mtn:      context.get_instance(Phong_Shader).material(Color.of(0.8, 0.5, 0.3, 1), {ambient: .1}),
                 
             };
 
@@ -77,6 +83,8 @@ window.Xplore = window.classes.Xplore =
                 fire: this.materials.white.override({texture: context.get_instance('assets/fire.jpg')}),
                 fire2: this.materials.white.override({texture: context.get_instance('assets/fire2.jpg')}),
                 bruins: this.materials.white.override({texture: context.get_instance('assets/bruins.jpg')}),
+                nebula: this.materials.sky.override({texture: context.get_instance('assets/night.jpg')}),
+                glass: this.materials.glass.override({texture: context.get_instance('assets/glass.jpg')})
             }
 
             // At the beginning of our program, load one of each of these shape
@@ -91,7 +99,8 @@ window.Xplore = window.classes.Xplore =
             this.sand_texture = this.materials.sand.override({texture: context.get_instance("assets/sand.jpg")});
             this.dune_texture = this.materials.dunes.override({texture: context.get_instance('assets/dunes.jpg')});
             this.sunHalo_texture = this.materials.sunHalo.override({texture: context.get_instance('assets/sunHalo.jpg')});
-
+            this.clay = context.get_instance(Phong_Shader).material(Color.of(.9, .5, .9, 1), { ambient: .4, diffusivity: .4 });
+            this.plastic = this.clay.override({specularity: .6});
 
 
             this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, 1, 1, 1), 100000)];
@@ -484,6 +493,89 @@ window.Xplore = window.classes.Xplore =
             this.shapes.pyramid.draw(gs, model_transform, this.textures.snow2)
         }
 
+        /****************************** LAVA LEVEL FUNCTIONS ******************************/
+        drawShape(shape, x, y, z, size, roty, texture) {
+            const trans = Mat4.identity().times(Mat4.translation([x,y,z]))
+                                         .times(Mat4.scale([size, size, size]))
+                                         .times(Mat4.rotation(roty, Vec.of(0,1,0)));
+            shape.draw(this.globals.graphics_state, trans, texture);
+        }
+
+        drawLevelFive() {
+            this.drawStage();
+            if (!this.lava_stage) this.lava_init();
+            let fell = 1;
+            for (let i = 0; i < this.platforms.length; i++) {
+                // draw platform
+                this.draw_platform(this.platforms[i]);
+                // check collision
+                if (!this.platforms[i].outside(this.ctrans)) fell = 0;
+                if (this.platforms[i].check_button(this.ctrans)) this.add_platform(this.platforms[i].next); 
+            }
+            if (fell) {
+                this.ctrans = Mat4.inverse(Mat4.translation([0, -5, 0])); 
+                this.ud = this.rd = Mat4.identity(); // undo/redo vertical rotation
+            }
+            if (this.test_goal(70, 285, 20)) this.lava_end();
+        }
+
+        drawStage() {
+            this.drawShape(this.shapes.ground, 0, -1, 0, 1200, Math.PI/2, this.materials.lava);
+            this.drawShape(this.shapes.pyramid, 300, 0, 300, 100, Math.PI/6, this.materials.mtn);
+            this.drawShape(this.shapes.pyramid, 90, 0, -170, 80, -Math.PI/3, this.materials.mtn);
+            this.drawShape(this.shapes.pyramid, 60, 0, -150, 30, -Math.PI/4, this.materials.mtn);
+            this.drawShape(this.shapes.sphere, 70, 10, 285, 20, 0, this.plastic);
+            const sky_trans = Mat4.identity().times(Mat4.translation([0,-300,0]))
+                                             .times(Mat4.scale([600, 600, 600]))
+                                             .times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0)));
+            this.shapes.sphere.draw(this.globals.graphics_state, sky_trans, this.textures.nebula);
+        }
+
+        draw_platform(p) {
+            const loc = Mat4.identity().times(Mat4.translation([p.x,0,p.y]));
+            const scale = loc.times(Mat4.scale([p.length, 1, p.width]));
+            this.shapes.ground.draw(this.globals.graphics_state, scale, this.textures.glass);
+            if (p.button.exists) {
+                const l2 = loc.times(Mat4.translation([p.button.x,0,p.button.y]))
+                              .times(Mat4.scale([5, 30, 5]));
+                this.shapes.pyramid.draw(this.globals.graphics_state, l2, this.plastic);
+            }
+        }
+
+        add_platform(next) {
+            const n = this.platformlist[next];
+            this.platforms.push(new Platform(n[0], n[1], n[2], n[3], new Button(n[4], n[5], n[6]), n[7]));
+        }
+
+        lava_init() {
+            this.minDomain = [-600,-600];
+            this.maxDomain = [600,600];
+            this.lights = [new Light(Vec.of(0, 50, -200, 1), Color.of(1, .4, 1, 1), 100000)]; // reset lights
+            this.reset_camera(0, -5, 0);
+            this.platformlist = [[0, 0, 200, 200, true, 70, -70, 1],
+                                 [0, -200, 50, 200, true, 20, -70, 2],
+                                 [-75, -325, 200, 50, true, -75, -20, 3],
+                                 [-225, -325, 100, 50, true, 0, 0, 4],
+                                 [-155, -225, 40, 150, true, 16, -60, 5],
+                                 [-250, 0, 50, 600, true, 0, 0, 6],
+                                 [-75, 285, 300, 30, false, 0, 0, 7]];
+
+            this.platforms = [new Platform(0, 0, 200, 200, new Button(true, 70, -70), 1)];  // add first platform and button
+            this.lava_stage = 1;                                                            // turn off init flag
+        }
+
+        test_goal(x, z, diameter) {
+            return (Math.abs(x-this.ctrans[0][3]) <= diameter/2) && (Math.abs(z-this.ctrans[2][3]) <= diameter/2);
+        }
+
+        lava_end() { // reset min/max Domains and increment current level
+            this.minDomain = [-195,-395];
+            this.maxDomain = [195,-5];
+            this.reset_camera(0, -5, 3);
+            this.current_level++;
+        }
+        /****************************** LAVA LEVEL FUNCTIONS ******************************/
+
         drawLevelThree(){
             this.drawSnow(7, 8, 6, this.textures.snow);
             this.drawGround(0, 0, -200, 400, this.textures.snow);
@@ -505,7 +597,7 @@ window.Xplore = window.classes.Xplore =
             let cam_x = this.ctrans[0][3]
             let cam_z = this.ctrans[2][3]
             if (cam_x > 97 && cam_x < 103 && cam_z < -297 && cam_z > -303){
-                this.reset_camera(0, -5, 3)
+                this.reset_camera(0, -5, 3);
                 this.current_level = 4;
             }
         }
@@ -592,7 +684,7 @@ window.Xplore = window.classes.Xplore =
                 case 2: this.drawLevelTwo(); break;
                 case 3: this.drawLevelThree(); break;
                 case 4: break;
-                case 5: break;
+                case 5: this.drawLevelFive(); break;
                 case 6: this.drawBruinLevel(); break;
                 
                 default: this.drawLevelOne(); break;
@@ -621,3 +713,63 @@ window.Xplore = window.classes.Xplore =
     };
 
 
+
+class Texture_Scroll_X extends Phong_Shader {
+    fragment_glsl_code() {
+        // ********* FRAGMENT SHADER *********
+        // TODO:  Modify the shader below (right now it's just the same fragment shader as Phong_Shader) for requirement #6.
+        return `
+        uniform sampler2D texture;
+        void main()
+        { if( GOURAUD || COLOR_NORMALS )    // Do smooth "Phong" shading unless options like "Gouraud mode" are wanted instead.
+          { gl_FragColor = VERTEX_COLOR;    // Otherwise, we already have final colors to smear (interpolate) across vertices.            
+            return;
+          }                                 // If we get this far, calculate Smooth "Phong" Shading as opposed to Gouraud Shading.
+                                            // Phong shading is not to be confused with the Phong Reflection Model.
+          // period of rotation is 10s (trial and error)
+          float a_time = mod(animation_time, 10.0); // used https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/mod.xhtml since glsl doesn't use %
+          vec4 tex_color = texture2D( texture, vec2(f_tex_coord[0] + 0.2*a_time, f_tex_coord[1]) );  // Sample the texture image in the correct place.
+                                                                                      // Compute an initial (ambient) color:
+          if( USE_TEXTURE ) gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
+          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
+          gl_FragColor.xyz += phong_model_lights( N );                     // Compute the final color with contributions from lights.
+        }`;
+    }
+};
+
+class Platform {
+    constructor(x, y, l, w, button, n) {
+        this.x = x;
+        this.y = y;
+        this.length = l;
+        this.width = w;
+        this.button = button;
+        this.next = n;
+    }
+
+    outside(matrix) {
+        /*console.log(Math.abs(this.x-matrix[0][3])>this.length/2);
+        console.log(Math.abs(this.y-matrix[2][3])>this.width/2);*/
+        const l = (Math.abs(this.x-matrix[0][3]) > this.length/2) || (Math.abs(this.y-matrix[2][3]) > this.width/2);
+        //if (l) console.log("outside\n");
+        return l;
+    }
+
+    check_button(matrix) {
+        if (this.button.exists) {
+            const collided = (Math.abs(this.x+this.button.x-matrix[0][3]) <= 5)
+                           && (Math.abs(this.y+this.button.y-matrix[2][3]) <= 5);
+            if (collided) this.button.exists = false;
+            return collided;
+        }
+        return false;
+    }
+};
+
+class Button {
+    constructor(exists, x, y) {
+        this.exists = exists;
+        this.x = x;
+        this.y = y;
+    }
+};
