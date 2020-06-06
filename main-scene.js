@@ -447,19 +447,20 @@ window.Xplore = window.classes.Xplore =
                 }
 
         }
-        drawShell(x,y,z){
+        drawShell(x,y,z,texture){
                 let modelt = Mat4.identity().times(Mat4.translation([x,y,z])).times(Mat4.scale([50,50,50]));
-                this.shapes.fan.draw(this.globals.graphics_state, modelt, this.materials.shellpink);
+                this.shapes.fan.draw(this.globals.graphics_state, modelt, texture);
         }
         
         drawShells(){
-            this.drawShell(-100,1,-280);
-            this.drawShell(-180,1,-110);
-            this.drawShell(-20,1,-50);
-            this.drawShell(100,1,-340);
-            this.drawShell(30,1,-190);
-            this.drawShell(10,1,-230);
-            this.drawShell(-130,1,-370);
+            this.drawShell(-100,1,-280,this.materials.shellpink);
+            this.drawShell(-180,1,-110,this.materials.shellpink);
+            this.drawShell(-20,1,-50,this.materials.shellpink);
+            this.drawShell(100,1,-340,this.materials.shellpink);
+            this.drawShell(30,1,-190,this.materials.shellpink);
+            this.drawShell(10,1,-230,this.materials.shellpink);
+            this.drawShell(-130,1,-370,this.materials.turtlegreen);
+            
         }
 
         drawTurtles() {
