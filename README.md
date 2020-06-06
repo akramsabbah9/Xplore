@@ -9,7 +9,7 @@ Team GFX
 | Nathan March | 404827938 | nathanzmarch@gmail.com | nathanzmarch |
 | Akram Sabbah | 504751933 | akramsabbah9@gmail.com | akramsabbah9 |
 | Alec Serrano Deneken | 804754567 | alecdeneken@gmail.com | alecdeneken |
-| Mathew Valley | 704747855 | mathew.valley1@gmail.com | matthewvalley |
+| Matthew Valley | 704747855 | matthew.valley1@gmail.com | matthewvalley |
 
 Representative: Nathan March
 
@@ -21,52 +21,31 @@ Xplore is a minimalist adventure game where the player traverses through multipl
 
 Xplore&#39;s gameplay consists of moving the player around a three-dimensional space, with first-person view. The player can use the keyboard to move forwards, backwards, left or right. They can adjust their view by moving the mouse.
 
+**How To Play**
+Xplore is a minimalist adventure game where the player traverses through multiple landscapes to reach the end goal. WASD keys move the player around and mouse-picking adjusts the view perspective. Each level has a trigger that the player needs to stand on in order to transition into the next landscape. There are 6 levels total.
+
 **Level Design**
 
 Checkpoints will be differently-colored or otherwise unique objects in the scene that the player must move to in order to progress. After reaching a level&#39;s checkpoint, the player will be moved to the next level, with different aesthetics and scenery.
 
-**Inspiration**
-
-![](RackMultipart20200516-4-1ytv7ko_html_5a453347969cc53.png)
-
-_Monument Valley:_ landscape design, geometric minimalism and use of pastel colors
-
-![](RackMultipart20200516-4-1ytv7ko_html_ac26dd3a543fdd75.png)
-
-_Fire Watch:_ First-person, 3D exploration
+**How to Run**
+Clone the repository.
+For Windows run host.bat then go to localhost:8000 in the browser of your choice.
+For Mac run host.command then go to localhost:8000 in the browser of your choice.
 
 **Technical Details and Advanced Topics**
 
-Xplore will be written in tiny-graphics. We plan to implement **shadowing** to enhance landscape design, and **collision detection** to keep our player in the scene. The landscapes will be constructed using minimalistic geometric shapes and models. We may import models and textures from other modeling software to add visual complexity to a given scene.
+Collision Detection: Implemented to keep the player inside the game domain, and to keep it out of certain structures, such as trees, cacti and the pyramid. Collision detection was also used in the last level: if the player touched the lava floor, they would respawn at the beginning of the lava, and if they touched a purple obelisk, they would spawn a new platform to walk on.
 
-**Projected Work Schedule**
+Particle Simulation: Designed player-tracked snow particles to give the illusion of snowfall. Rather than drawing snow objects across the entire level, localizing the snowfall to the player location notably optimized runtime performance. Snow particles are first drawn at a set height and accelerated towards the ground. When a particle hits the floor, it is redrawn at its initial height again. This is then enhanced by adding several more particles to the operation. This loop of actions creates a seamless illusion of global snow.
 
-Week 6:
+Mouse Controls: To properly implement Xplore’s controls, the default Movement_Controls (in dependencies.js) were removed. The commands were re-written from the ground up to allow for camera rotation without any z-axis skew. This allowed the orientation of the camera matrix to stay aligned with the level. Javascript event listeners were also added to allow for click-and-drag mouse rotation. Our implementation only rotates the camera when the mouse is dragged in a direction, unlike the default Movement_Controls which rotates the camera as long as the mouse is slightly off-center.
 
-- Make first-person &quot;camera&quot;
-  - Implement motion (controlled using W-A-S-D keys)
-  - Implement perspective (controlled with mouse)
-- Research possibilities of importing more complex models
+**Citations**
 
-Week 7:
+Model Imports:
 
-- Select design direction and color palette
-- Construct 1st landscape
-
-Week 8:
-
-- Implement shadows
-- Construct more scenes
-
-Week 9:
-
-- Implement collisions that trigger transitions between scenes
-
-Week 10:
-
-- Finish up and submit final product
-
-**Next Steps for Refined Proposal**
-
-- Detailed plan for each scene
-- Mid-way demo (first scene)
+Fan Shell - https://www.turbosquid.com/FullPreview/Index.cfm/ID/1562122
+Snail - https://www.turbosquid.com/FullPreview/Index.cfm/ID/1551575
+Whale - https://www.turbosquid.com/3d-models/whale-swimming-animation-model-1560985
+Turtle - http://www.cadnav.com/3d-models/model-47651.html
